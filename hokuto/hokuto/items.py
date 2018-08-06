@@ -8,7 +8,7 @@
 import scrapy
 
 
-class HokutoItem(scrapy.Item):
-    # define the fields for your item here like:
-    # name = scrapy.Field()
-    pass
+class HokutoNoKenCharacter(scrapy.Item):
+    name = scrapy.Field()
+    url = scrapy.Field()
+    not_in_manga = scrapy.Field()
