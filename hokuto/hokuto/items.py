@@ -11,4 +11,4 @@ import scrapy
 class HokutoNoKenCharacter(scrapy.Item):
     name = scrapy.Field()
     url = scrapy.Field()
-    not_in_manga = scrapy.Field()
+    is_not_in_manga = scrapy.Field()

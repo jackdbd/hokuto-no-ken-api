@@ -20,13 +20,12 @@ class CharactersSpider(scrapy.Spider):
             characters = li.xpath((xpath_query))
             for character in characters:
                 name = character.xpath("text()").extract()[0]
-                not_in_manga = True if is_not_in_manga else False
                 if "(page does not exist)" in character.attrib["title"]:
                     url = None
                 else:
                     url = character.xpath("@href").extract()[0]
 
                 item = HokutoNoKenCharacter(
-                    name=name, not_in_manga=not_in_manga, url=url
+                    name=name, is_not_in_manga=is_not_in_manga, url=url
                 )
                 yield item
