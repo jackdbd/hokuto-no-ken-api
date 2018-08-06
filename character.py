@@ -15,6 +15,7 @@ def scrape_field(node, index):
         el = node.cssselect(selector)[0]
         field = el.text_content().strip("\n")
         return field
+
     else:
         return "NA"
 
