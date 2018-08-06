@@ -1,5 +1,5 @@
 import scrapy
-from ..items import HokutoNoKenCharacter
+from ..items import LegacyCharacterItem
 
 
 class CharactersSpider(scrapy.Spider):
@@ -25,7 +25,7 @@ class CharactersSpider(scrapy.Spider):
                 else:
                     url = character.xpath("@href").extract()[0]
 
-                item = HokutoNoKenCharacter(
+                item = LegacyCharacterItem(
                     name=name, is_not_in_manga=is_not_in_manga, url=url
                 )
                 yield item
