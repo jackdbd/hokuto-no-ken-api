@@ -11,7 +11,7 @@ from sqlalchemy.exc import NoSuchTableError
 
 # from scrapy.exceptions import DropItem
 from scrapy import log
-from db_utils import get_table, create_characters_table, create_voice_actors_table, insert
+from db_utils import get_table, create_characters_table, create_voice_actors_table, create_fighting_styles_table, insert
 
 HERE = os.path.abspath(os.path.dirname(__file__))
 ROOT = os.path.abspath(os.path.join(HERE, "..", ".."))
@@ -38,6 +38,11 @@ class HokutoSQLitePipeline(object):
         except NoSuchTableError:
             self.voice_actors_table = create_voice_actors_table(self.engine)
 
+        try:
+            self.fighting_styles_table = get_table(self.engine, "fighting_styles")
+        except NoSuchTableError:
+            self.fighting_styles_table = create_fighting_styles_table(self.engine)
+
     def process_item(self, item, spider):
         if spider.name == "character":
             datum = {
@@ -52,6 +57,11 @@ class HokutoSQLitePipeline(object):
             insert(self.conn, self.characters_table, datum)
             message = f'Character {datum["name_romaji"]} added to the database'
             log.msg(message, level=log.DEBUG, spider=spider)
+
+            for datum in item["fighting_styles"]:
+                insert(self.conn, self.fighting_styles_table, datum)
+                message = f'Fighting style {datum["name"]} added to the database'
+                log.msg(message, level=log.DEBUG, spider=spider)
 
             for datum in item["voice_actors"]:
                 insert(self.conn, self.voice_actors_table, datum)

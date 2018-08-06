@@ -6,6 +6,8 @@ logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger("sqlalchemy.engine.base")
 logger.setLevel(logging.DEBUG)
 
+# TODO: family relationship, allegiance relationship
+
 
 def get_table(engine, table_name):
     """Connect to a pre-existing table via reflection.
@@ -41,6 +43,7 @@ def create_characters_table(engine):
         sa.Column("id", sa.Integer, primary_key=True),
         sa.Column("name_kanji", sa.String(25), nullable=False),
         sa.Column("name_romaji", sa.String(25), nullable=False),
+        sa.Column("avatar", sa.String(128), nullable=True),
         sa.Column("url", sa.String(25), nullable=True),
         sa.Column("is_not_in_manga", sa.Boolean, nullable=False),
         sa.Column("first_anime_episode", sa.Integer(), nullable=True),
@@ -73,6 +76,20 @@ def create_voice_actors_table(engine):
     logger.debug(metadata.tables)
     metadata.create_all(engine)
     return voice_actors
+
+
+def create_fighting_styles_table(engine):
+    metadata = sa.MetaData(engine)
+    fighting_styles = sa.Table(
+        "fighting_styles",
+        metadata,
+        sa.Column("id", sa.Integer, primary_key=True),
+        sa.Column("name", sa.String(25), nullable=False),
+        sa.Column("url", sa.String(25), nullable=True),
+    )
+    logger.debug(metadata.tables)
+    metadata.create_all(engine)
+    return fighting_styles
 
 
 def bulk_insert(db_uri, table, data):
