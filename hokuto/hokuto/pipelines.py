@@ -11,18 +11,15 @@ from sqlalchemy.exc import NoSuchTableError
 
 # from scrapy.exceptions import DropItem
 from scrapy import log
-from db_utils import get_table, create_characters_table, create_voice_actors_table, create_fighting_styles_table, insert
+from db_utils import DB_PATH, DB_URI, get_table, create_characters_table, create_voice_actors_table, create_fighting_styles_table, insert
 
 HERE = os.path.abspath(os.path.dirname(__file__))
 ROOT = os.path.abspath(os.path.join(HERE, "..", ".."))
-DB_NAME = "hokuto.db"
-DB_URI = f"sqlite:///{ROOT}/{DB_NAME}"
 
 
 class HokutoSQLitePipeline(object):
 
     def __init__(self):
-        # DB_PATH = os.path.join(ROOT, DB_NAME)
         # if os.path.exists(DB_PATH):
         #     os.unlink(DB_PATH)
         self.engine = sa.create_engine(DB_URI)

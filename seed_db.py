@@ -1,8 +1,10 @@
 import os
 import logging
 import requests
+import itertools
 import lxml.html
 import sqlalchemy as sa
+from db_utils import DB_PATH, DB_URI, create_characters_table
 from characters import scrape_characters
 
 logging.basicConfig(level=logging.DEBUG)
@@ -13,25 +15,7 @@ BASE_URL = "http://hokuto.wikia.com"
 CHARACTERS_URL = f"{BASE_URL}/wiki/List_of_Hokuto_no_Ken_characters"
 
 
-def create_characters_table(db_uri):
-    engine = sa.create_engine(db_uri)
-    metadata = sa.MetaData()
-    characters = sa.Table(
-        "characters",
-        metadata,
-        sa.Column("id", sa.Integer, primary_key=True),
-        sa.Column("name", sa.String(25), nullable=False),
-        sa.Column("url", sa.String(25), nullable=True),
-        sa.Column("is_not_in_manga", sa.Boolean, nullable=False),
-    )
-    logger.debug(metadata.tables)
-
-    # Store in the DB the schema we have just defined
-    metadata.create_all(engine)
-    return characters
-
-
-def scrape_and_store(html, db_uri, table):
+def scrape(html):
     root = lxml.html.fromstring(html)
     characters_not_in_manga = scrape_characters(
         root, "div#mw-content-text > ul > li > i > a", True
@@ -39,32 +23,40 @@ def scrape_and_store(html, db_uri, table):
     characters_in_manga = scrape_characters(
         root, "div#mw-content-text > ul > li > a", False
     )
-    engine = sa.create_engine(db_uri)
-    conn = engine.connect()
+    kenshiro = scrape_characters(root, "div#mw-content-text > ul > li > b > a", False)
+    nested = [characters_not_in_manga, characters_in_manga, kenshiro]
+    characters = list(itertools.chain(*nested))
+    return characters
+
+
+def store(conn, table, data):
     clause = table.insert()
-    conn.execute(clause, characters_not_in_manga)
-    conn.execute(clause, characters_in_manga)
-    return None
+    conn.execute(clause, data)
 
 
-if __name__ == "__main__":
-    DB_PATH = "data.db"
-    if os.path.exists(DB_PATH):
-        os.unlink(DB_PATH)
-    db_uri = f"sqlite:///{DB_PATH}"
-    characters = create_characters_table(db_uri)
-    req = requests.get(CHARACTERS_URL)
-    scrape_and_store(req.text, db_uri, characters)
-
-    # Of course we can also use raw SQL to fetch all the results
-    engine = sa.create_engine(db_uri)
-    conn = engine.connect()
+def retrieve(conn):
     result = conn.execute(
         """
-        SELECT c.name FROM characters as c
+        SELECT c.name_romaji FROM characters as c
         WHERE c.is_not_in_manga = 1 
-        ORDER BY c.name DESC
+        ORDER BY c.name_romaji DESC
         LIMIT 3;
         """
     )
     print(f"Result: {result.fetchall()}")
+
+
+def main():
+    if os.path.exists(DB_PATH):
+        os.unlink(DB_PATH)
+    engine = sa.create_engine(DB_URI)
+    characters_table = create_characters_table(engine)
+    req = requests.get(CHARACTERS_URL)
+    characters = scrape(req.text)
+    conn = engine.connect()
+    store(conn, characters_table, characters)
+    retrieve(conn)
+
+
+if __name__ == "__main__":
+    main()

@@ -1,5 +1,13 @@
+import os
 import logging
 import sqlalchemy as sa
+
+
+ROOT = os.path.abspath(os.path.dirname(__file__))
+# ROOT = os.path.abspath(os.path.join(HERE, "..", ".."))
+DB_NAME = "hokuto.db"
+DB_PATH = os.path.join(ROOT, DB_NAME)
+DB_URI = f"sqlite:///{ROOT}/{DB_NAME}"
 
 
 logging.basicConfig(level=logging.DEBUG)
