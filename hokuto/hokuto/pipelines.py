@@ -9,37 +9,28 @@ See Also
 """
 import os
 import sqlalchemy as sa
-from sqlalchemy.exc import NoSuchTableError
 from scrapy.exceptions import DropItem
 from scrapy import log
-from db_utils import DB_PATH, DB_URI, get_table, create_characters_table, create_voice_actors_table, create_fighting_styles_table, insert
+from dotenv import find_dotenv, load_dotenv
+from .db_utils import get_table, insert
 
+
+load_dotenv(find_dotenv(".env"))
 HERE = os.path.abspath(os.path.dirname(__file__))
 ROOT = os.path.abspath(os.path.join(HERE, "..", ".."))
+DB_NAME = os.environ.get("LOCAL_DB")
+DB_PATH = os.path.join(ROOT, DB_NAME)
+DB_URI = f"sqlite:///{ROOT}/{DB_NAME}"
 
 
 class SQLDbPipeline(object):
 
     def __init__(self):
-        # if os.path.exists(DB_PATH):
-        #     os.unlink(DB_PATH)
         self.engine = sa.create_engine(DB_URI)
         self.conn = self.engine.connect()
-
-        try:
-            self.characters_table = get_table(self.engine, "characters")
-        except NoSuchTableError:
-            self.characters_table = create_characters_table(self.engine)
-
-        try:
-            self.voice_actors_table = get_table(self.engine, "voice_actors")
-        except NoSuchTableError:
-            self.voice_actors_table = create_voice_actors_table(self.engine)
-
-        try:
-            self.fighting_styles_table = get_table(self.engine, "fighting_styles")
-        except NoSuchTableError:
-            self.fighting_styles_table = create_fighting_styles_table(self.engine)
+        self.characters_table = get_table(self.engine, "characters")
+        self.voice_actors_table = get_table(self.engine, "voice_actors")
+        self.fighting_styles_table = get_table(self.engine, "fighting_styles")
 
     def process_item(self, item, spider):
         if not item["is_valid"]:
