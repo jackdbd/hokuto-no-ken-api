@@ -1,0 +1,14 @@
+{% extends 'layouts/base.html' %}
+
+{% block header %}
+  <nav>
+    <div>APP HEADER</div>
+  </nav>
+{% endblock header %}
+
+{% block footer %}
+  <li><a href="https://flask-restplus.readthedocs.io/en/stable/" target="_blank">Flask-RESTPlus</a></li>
+  <li><a href="http://hokuto.wikia.com/wiki/Main_Page" target="_blank">Hokuto Renkitōza</a></li>
+  <li><a href="{{ url_for('api.doc') }}">API</a></li>
+  <li><a href="{{ url_for('page.about') }}">About</a></li>
+{% endblock footer %}
