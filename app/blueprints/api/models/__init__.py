@@ -2,5 +2,6 @@
 
 A model is the INTERNAL representation of an entity.
 """
-from app.blueprints.api.models.character import CharacterModel
-from app.blueprints.api.models.voice_actor import VoiceActorModel
+from .character import CharacterModel
+from .voice_actor import VoiceActorModel
+from .fighting_style import FightingStyleModel
