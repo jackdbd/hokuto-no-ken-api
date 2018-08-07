@@ -1,13 +1,14 @@
 # -*- coding: utf-8 -*-
+"""Scrapy global settings for the 'hokuto' project.
 
-# Scrapy settings for hokuto project
-#
-# For simplicity, this file contains only settings considered important or
-# commonly used. You can find more settings consulting the documentation:
-#
-#     https://doc.scrapy.org/en/latest/topics/settings.html
-#     https://doc.scrapy.org/en/latest/topics/downloader-middleware.html
-#     https://doc.scrapy.org/en/latest/topics/spider-middleware.html
+For simplicity, this file contains only settings considered important or\
+commonly used. You can find more settings consulting the documentation.
+
+See Also
+    https://doc.scrapy.org/en/latest/topics/settings.html
+    https://doc.scrapy.org/en/latest/topics/downloader-middleware.html
+    https://doc.scrapy.org/en/latest/topics/spider-middleware.html
+"""
 import os
 
 HERE = os.path.abspath(os.path.dirname(__file__))
@@ -36,8 +37,7 @@ ROBOTSTXT_OBEY = True
 # CONCURRENT_REQUESTS_PER_DOMAIN = 16
 # CONCURRENT_REQUESTS_PER_IP = 16
 
-# Disable cookies (enabled by default)
-# COOKIES_ENABLED = False
+COOKIES_ENABLED = True
 
 # Disable Telnet Console (enabled by default)
 # TELNETCONSOLE_ENABLED = False
@@ -70,9 +70,11 @@ FEED_URI = f"file:///{ROOT}/export.jsonl"
 # FEED_URI = "stdout:"
 FEED_FORMAT = "jsonlines"
 
-# Configure item pipelines
+# I think it's better to define ITEM_PIPELINES in a spider's custom_settings
+# instead of defining them globally here. Different spiders might need to send
+# items to different pipelines.
 # See https://doc.scrapy.org/en/latest/topics/item-pipeline.html
-ITEM_PIPELINES = {"hokuto.pipelines.HokutoSQLitePipeline": 300}
+# ITEM_PIPELINES = {"hokuto.pipelines.SQLDbPipeline": 300}
 
 # Enable and configure the AutoThrottle extension (disabled by default)
 # See https://doc.scrapy.org/en/latest/topics/autothrottle.html

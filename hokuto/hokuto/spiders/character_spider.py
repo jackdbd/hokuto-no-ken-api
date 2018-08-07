@@ -113,16 +113,21 @@ class CharacterSpider(scrapy.Spider):
     allowed_domains = ["http://hokuto.wikia.com"]
     start_urls = [
         "http://hokuto.wikia.com/wiki/Kenshiro",
-        "http://hokuto.wikia.com/wiki/Lin",
-        "http://hokuto.wikia.com/wiki/Shin",
-        "http://hokuto.wikia.com/wiki/Toki",
-        "http://hokuto.wikia.com/wiki/Joker",  # not in manga
+        # "http://hokuto.wikia.com/wiki/Lin",
+        # "http://hokuto.wikia.com/wiki/Shin",
+        # "http://hokuto.wikia.com/wiki/Toki",
+        # Joker was not in the original manga
+        # "http://hokuto.wikia.com/wiki/Joker",
+        # Asuka has a completely different page structure
+        # "http://hokuto.wikia.com/wiki/Asuka",
+        # # These two fail because they have a slightly different infobox
+        # "http://hokuto.wikia.com/wiki/Page",
+        # "http://hokuto.wikia.com/wiki/Pige",
     ]
 
     def parse(self, response):
         root = scrapy.Selector(response)
         tr_selectors = root.xpath('//table[@class="infobox"]/tr')
-
         name_kanji = tr_selectors[2].xpath("td/text()").extract()[0].strip("\n")
         name_romaji = tr_selectors[3].xpath("td/i/text()").extract()[0]
 
