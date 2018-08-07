@@ -1,5 +1,5 @@
 from flask_restplus import Namespace, Resource, fields
-from app.blueprints.api.models import VoiceActorModel
+from ..models import VoiceActorModel
 
 
 ns = Namespace("voice_actors", description="Voice Actors related operations.")
@@ -9,13 +9,16 @@ voice_actor_api_model = ns.model(
     "Voice Actor",
     {
         "name": fields.String(required=True, description="The voice actor's name"),
-        "url": fields.String(required=False, description="URL to the voice actor's wiki"),
+        "url": fields.String(
+            required=False, description="URL to the voice actor's wiki"
+        ),
     },
 )
 
 
 @ns.route("/")
 class VoiceActorList(Resource):
+
     @ns.doc("get_voice_actor_list")
     @ns.marshal_list_with(voice_actor_api_model)
     def get(self):
@@ -27,6 +30,7 @@ class VoiceActorList(Resource):
 @ns.route("/<int:voice_actor_id>")
 @ns.param("voice_actor_id", "The voice actor's identifier")
 class VoiceActor(Resource):
+
     @ns.doc("get_voice_actor", responses={404: "Voice actor not found."})
     @ns.marshal_with(voice_actor_api_model)
     def get(self, voice_actor_id):
@@ -40,6 +44,7 @@ class VoiceActor(Resource):
 
 @ns.route("/random")
 class VoiceActorRandom(Resource):
+
     @ns.doc("get_voice_actor_random")
     @ns.marshal_with(voice_actor_api_model)
     def get(self):

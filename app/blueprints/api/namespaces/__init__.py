@@ -9,5 +9,6 @@ https://flask-restplus.readthedocs.io/en/stable/_modules/flask/views.html?highli
 
 A resource is the EXTERNAL representation of an entity.
 """
-from app.blueprints.api.namespaces.characters import ns as characters
-from app.blueprints.api.namespaces.voice_actors import ns as voice_actors
+from .characters import ns as characters
+from .voice_actors import ns as voice_actors
+from .fighting_styles import ns as fighting_styles
