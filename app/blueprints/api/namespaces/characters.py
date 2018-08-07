@@ -8,11 +8,26 @@ ns = Namespace("characters", description="Characters related operations.")
 character_api_model = ns.model(
     "Character",
     {
+        "id": fields.Integer(required=True, description="The character's id"),
         "name_romaji": fields.String(
-            required=True, description="The character's name in romaji"
+            required=True, description="The character's name (in romaji)"
         ),
         "name_kanji": fields.String(
-            required=True, description="The character's name in kanji"
+            required=True, description="The character's name (in kanji)"
+        ),
+        "avatar": fields.String(
+            required=False, description="The character's avatar on Hokuto Renkitōza"
+        ),
+        "url": fields.String(
+            required=False, description="The character's wiki URL on Hokuto Renkitōza"
+        ),
+        "first_anime_episode": fields.Integer(
+            required=False,
+            description="The first episode in the anime where the character appears",
+        ),
+        "first_manga_chapter": fields.Integer(
+            required=False,
+            description="The first chapter in the manga where the character appears",
         ),
         "is_not_in_manga": fields.Boolean(
             required=True,
