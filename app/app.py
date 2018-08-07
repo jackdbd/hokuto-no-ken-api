@@ -1,7 +1,7 @@
 from flask import Flask
-from app.config import Config
-from app.blueprints import api, page
-from app.extensions import db, migrate
+from .config import Config
+from .blueprints import api, page
+from .extensions import db, migrate
 
 
 def create_app():
