@@ -8,6 +8,10 @@
 #     https://doc.scrapy.org/en/latest/topics/settings.html
 #     https://doc.scrapy.org/en/latest/topics/downloader-middleware.html
 #     https://doc.scrapy.org/en/latest/topics/spider-middleware.html
+import os
+
+HERE = os.path.abspath(os.path.dirname(__file__))
+ROOT = os.path.abspath(os.path.join(HERE, "..", ".."))
 
 BOT_NAME = "hokuto"
 
@@ -62,12 +66,13 @@ ROBOTSTXT_OBEY = True
 #    'scrapy.extensions.telnet.TelnetConsole': None,
 # }
 
+FEED_URI = f"file:///{ROOT}/export.jsonl"
+# FEED_URI = "stdout:"
+FEED_FORMAT = "jsonlines"
+
 # Configure item pipelines
 # See https://doc.scrapy.org/en/latest/topics/item-pipeline.html
-ITEM_PIPELINES = {
-    "hokuto.pipelines.HokutoSQLitePipeline": 300,
-    "hokuto.pipelines.HokutoJSONLinesWriterPipeline": 800,
-}
+ITEM_PIPELINES = {"hokuto.pipelines.HokutoSQLitePipeline": 300}
 
 # Enable and configure the AutoThrottle extension (disabled by default)
 # See https://doc.scrapy.org/en/latest/topics/autothrottle.html

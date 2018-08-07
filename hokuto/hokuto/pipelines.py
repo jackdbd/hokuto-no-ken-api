@@ -66,24 +66,3 @@ class HokutoSQLitePipeline(object):
                 log.msg(message, level=log.DEBUG, spider=spider)
 
         return item
-
-
-class HokutoJSONLinesWriterPipeline(object):
-
-    def __init__(self):
-        self.file_path = os.path.join(ROOT, "characters.jsonl")
-        self.fh = None
-        if os.path.exists(self.file_path):
-            os.unlink(self.file_path)
-
-    def open_spider(self, spider):
-        self.fh = open(self.file_path, "w")
-
-    def close_spider(self, spider):
-        self.fh.close()
-
-    def process_item(self, item, spider):
-        d = dict(item)
-        line = json.dumps(d) + "\n"
-        self.fh.write(line)
-        return item
