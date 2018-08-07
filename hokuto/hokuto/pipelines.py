@@ -9,7 +9,7 @@ import json
 import sqlalchemy as sa
 from sqlalchemy.exc import NoSuchTableError
 
-# from scrapy.exceptions import DropItem
+from scrapy.exceptions import DropItem
 from scrapy import log
 from db_utils import DB_PATH, DB_URI, get_table, create_characters_table, create_voice_actors_table, create_fighting_styles_table, insert
 
