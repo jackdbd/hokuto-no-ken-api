@@ -20,9 +20,18 @@ WORKDIR $INSTALL_PATH
 
 # The COPY instruction copies new files or directories from <src> and adds them
 # to the filesystem of the container at the path <dest>.
-COPY environment.yml environment.yml
+COPY conda-requirements.txt conda-requirements.txt
 
-RUN conda env create -f environment.yml
+RUN conda create --name hokuto-app
+RUN source activate hokuto-app
+
+RUN conda install -c conda-forge scrapy
+RUN conda install -c conda-forge Flask
+RUN conda install -c conda-forge Flask-SQLAlchemy
+RUN conda install -c conda-forge Flask-Migrate
+RUN conda install -c conda-forge Flask-RESTPlus
+RUN conda install -c conda-forge python-dotenv
+
 RUN conda install -c conda-forge gunicorn
 
 # COPY . .
