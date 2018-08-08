@@ -8,6 +8,7 @@ ns = Namespace("fighting_styles", description="Fighting styles related operation
 fighting_style_api_model = ns.model(
     "Fighting Style",
     {
+        "id": fields.Integer(required=True, description="The fighting style's id"),
         "name": fields.String(required=True, description="The fighting style"),
         "url": fields.String(
             required=False, description="URL to the fighting style's wiki"
