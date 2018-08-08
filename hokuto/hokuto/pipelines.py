@@ -16,11 +16,12 @@ from .db_utils import get_table, insert
 
 
 load_dotenv(find_dotenv(".env"))
-HERE = os.path.abspath(os.path.dirname(__file__))
-ROOT = os.path.abspath(os.path.join(HERE, "..", ".."))
-DB_NAME = os.environ.get("LOCAL_DB")
-DB_PATH = os.path.join(ROOT, DB_NAME)
-DB_URI = f"sqlite:///{ROOT}/{DB_NAME}"
+# HERE = os.path.abspath(os.path.dirname(__file__))
+# ROOT = os.path.abspath(os.path.join(HERE, "..", ".."))
+# DB_NAME = os.environ.get("LOCAL_DB")
+# DB_PATH = os.path.join(ROOT, DB_NAME)
+# DB_URI = f"sqlite:///{ROOT}/{DB_NAME}"
+DB_URI = os.environ.get("DB_URI")
 
 
 class SQLDbPipeline(object):

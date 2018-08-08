@@ -28,7 +28,9 @@ dependencies:
 - itsdangerous=0.24=py_2
 - jinja2=2.10=py_1
 - jsonschema=2.6.0=py36_1
+- krb5=1.16.1=hbb41f41_0
 - libiconv=1.15=h470a237_1
+- libpq=9.6.3=0
 - libxml2=2.9.8=h422b904_2
 - libxslt=1.1.32=h88dbc4e_1
 - lxml=4.2.4=py36hc9114bc_0
@@ -36,6 +38,7 @@ dependencies:
 - markupsafe=1.0=py36_0
 - more-itertools=4.2.0=py36_1
 - pluggy=0.7.1=py_0
+- psycopg2=2.7.5=py36hdffb7b8_1
 - py=1.5.4=py_0
 - pyasn1=0.4.4=py_0
 - pyasn1-modules=0.2.1=py_0

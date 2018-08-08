@@ -37,6 +37,7 @@ RUN conda install --channel conda-forge flask-sqlalchemy -y
 RUN conda install --channel conda-forge flask-migrate -y
 RUN conda install --channel conda-forge flask-restplus -y
 RUN conda install --channel conda-forge python-dotenv -y
+RUN conda install --channel conda-forge psycopg2 -y
 
 # gunicorn is not a dependency in development, so we have to install it now.
 RUN conda install --channel conda-forge gunicorn -y
