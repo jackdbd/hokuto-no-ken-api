@@ -1,4 +1,5 @@
 from flask import Flask
+from werkzeug.contrib.fixers import ProxyFix
 from .config import Config
 from .blueprints import api, page
 from .extensions import db, migrate
@@ -9,6 +10,7 @@ def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
     # print("app.config\n", app.config)
+    app.wsgi_app = ProxyFix(app.wsgi_app)
     app.register_blueprint(api)
     app.register_blueprint(page)
     extensions(app)
