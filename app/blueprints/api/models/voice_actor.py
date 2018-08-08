@@ -6,7 +6,7 @@ class VoiceActorModel(db.Model):
     __tablename__ = "voice_actors"
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(64), nullable=False)
-    url = db.Column(db.String(32), nullable=True)
+    url = db.Column(db.String(128), nullable=True)
 
     def __repr__(self):
         return f"<{self.__class__.__name__} {self.id} {self.name}>"

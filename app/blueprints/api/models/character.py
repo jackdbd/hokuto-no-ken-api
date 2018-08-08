@@ -6,9 +6,9 @@ class CharacterModel(db.Model):
     __tablename__ = "characters"
     id = db.Column(db.Integer, primary_key=True)
     name_kanji = db.Column(db.String(16), index=True, nullable=False)
-    name_romaji = db.Column(db.String(32), index=True, nullable=False)
+    name_romaji = db.Column(db.String(64), index=True, nullable=False)
     avatar = db.Column(db.String(128), nullable=True)
-    url = db.Column(db.String(32), nullable=True)
+    url = db.Column(db.String(128), nullable=True)
     is_not_in_manga = db.Column(db.Boolean, nullable=False)
     first_anime_episode = db.Column(db.Integer, nullable=True)
     first_manga_chapter = db.Column(db.Integer, nullable=True)
