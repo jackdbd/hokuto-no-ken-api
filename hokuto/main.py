@@ -17,11 +17,7 @@ def parse_args():
         description=__doc__, formatter_class=RawDescriptionHelpFormatter
     )
     parser.add_argument(
-        "-s",
-        "--spider",
-        type=str,
-        choices=["character", "characters"],
-        help="Spider to execute",
+        "-s", "--spider", type=str, choices=["characters_crawler"], help="Spider to run"
     )
     parser.add_argument(
         "-o", "--output", action="store_true", help="If set, generate JSON Lines output"

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Scrapy global settings for the 'hokuto' project.
+"""Scrapy global settings.
 
 For simplicity, this file contains only settings considered important or\
 commonly used. You can find more settings consulting the documentation.
@@ -14,33 +14,32 @@ import os
 HERE = os.path.abspath(os.path.dirname(__file__))
 ROOT = os.path.abspath(os.path.join(HERE, "..", ".."))
 
-BOT_NAME = "hokuto"
+BOT_NAME = os.path.split(HERE)[1]
 
-SPIDER_MODULES = ["hokuto.spiders"]
-NEWSPIDER_MODULE = "hokuto.spiders"
-
-
-# Crawl responsibly by identifying yourself (and your website) on the user-agent
-# USER_AGENT = 'hokuto (+http://www.yourdomain.com)'
+# Crawl responsibly by identifying yourself on the user-agent
+USER_AGENT = f"{BOT_NAME}(+http://www.yourdomain.com)"
 
 # Obey robots.txt rules
 ROBOTSTXT_OBEY = True
 
-# Configure maximum concurrent requests performed by Scrapy (default: 16)
-# CONCURRENT_REQUESTS = 32
+SPIDER_MODULES = [f"{BOT_NAME}.spiders"]
+NEWSPIDER_MODULE = f"{BOT_NAME}.spiders"
 
-# Configure a delay for requests for the same website (default: 0)
+# Maximum concurrent requests performed by Scrapy (default: 16)
+CONCURRENT_REQUESTS = 16
+
+# Delay for requests on the same website (default: 0 seconds)
 # See https://doc.scrapy.org/en/latest/topics/settings.html#download-delay
 # See also autothrottle settings and docs
-# DOWNLOAD_DELAY = 3
-# The download delay setting will honor only one of:
+DOWNLOAD_DELAY = 0.25
+
+# The DOWNLOAD_DELAY setting will honor only one of:
 # CONCURRENT_REQUESTS_PER_DOMAIN = 16
 # CONCURRENT_REQUESTS_PER_IP = 16
 
 COOKIES_ENABLED = True
 
-# Disable Telnet Console (enabled by default)
-# TELNETCONSOLE_ENABLED = False
+TELNETCONSOLE_ENABLED = True
 
 # Override the default request headers:
 # DEFAULT_REQUEST_HEADERS = {
@@ -48,35 +47,33 @@ COOKIES_ENABLED = True
 #   'Accept-Language': 'en',
 # }
 
-# Enable or disable spider middlewares
 # See https://doc.scrapy.org/en/latest/topics/spider-middleware.html
 # SPIDER_MIDDLEWARES = {
-#    'hokuto.middlewares.HokutoSpiderMiddleware': 543,
+#    f"{BOT_NAME}.middlewares.HokutoSpiderMiddleware": 543,
 # }
 
-# Enable or disable downloader middlewares
 # See https://doc.scrapy.org/en/latest/topics/downloader-middleware.html
 # DOWNLOADER_MIDDLEWARES = {
-#    'hokuto.middlewares.HokutoDownloaderMiddleware': 543,
+#    f"{BOT_NAME}.middlewares.HokutoDownloaderMiddleware": 543,
 # }
 
-# Enable or disable extensions
 # See https://doc.scrapy.org/en/latest/topics/extensions.html
 # EXTENSIONS = {
 #    'scrapy.extensions.telnet.TelnetConsole': None,
 # }
 
+# Feed Exports
 FEED_URI = f"file:///{ROOT}/export.jsonl"
 # FEED_URI = "stdout:"
 FEED_FORMAT = "jsonlines"
 
 # I think it's better to define ITEM_PIPELINES in a spider's custom_settings
 # instead of defining them globally here. Different spiders might need to send
-# items to different pipelines.
+# the scraped items to different pipelines.
 # See https://doc.scrapy.org/en/latest/topics/item-pipeline.html
-# ITEM_PIPELINES = {"hokuto.pipelines.SQLDbPipeline": 300}
+# ITEM_PIPELINES = {f"{BOT_NAME}.pipelines.DropItemPipeline": 100}
 
-# Enable and configure the AutoThrottle extension (disabled by default)
+# AutoThrottle extension (disabled by default)
 # See https://doc.scrapy.org/en/latest/topics/autothrottle.html
 # AUTOTHROTTLE_ENABLED = True
 # The initial download delay
@@ -89,10 +86,17 @@ FEED_FORMAT = "jsonlines"
 # Enable showing throttling stats for every response received:
 # AUTOTHROTTLE_DEBUG = False
 
-# Enable and configure HTTP caching (disabled by default)
+# Configure HTTP caching (disabled by default)
 # See https://doc.scrapy.org/en/latest/topics/downloader-middleware.html#httpcache-middleware-settings
 # HTTPCACHE_ENABLED = True
 # HTTPCACHE_EXPIRATION_SECS = 0
 # HTTPCACHE_DIR = 'httpcache'
 # HTTPCACHE_IGNORE_HTTP_CODES = []
 # HTTPCACHE_STORAGE = 'scrapy.extensions.httpcache.FilesystemCacheStorage'
+
+# DUPEFILTER_CLASS = "scrapy_redis.dupefilter.RFPDupeFilter"
+# DUPEFILTER_DEBUG = True
+# SCHEDULER = "scrapy_redis.scheduler.Scheduler"
+# SCHEDULER_PERSIST = True
+
+LOG_LEVEL = "DEBUG"
