@@ -22,11 +22,11 @@ character_api_model = ns.model(
         "url": fields.String(
             required=False, description="The character's wiki URL on Hokuto Renkitōza"
         ),
-        "first_appearances_anime": fields.Integer(
+        "first_appearance_anime": fields.Integer(
             required=False,
             description="The first anime episode where the character appears",
         ),
-        "first_appearances_manga": fields.Integer(
+        "first_appearance_manga": fields.Integer(
             required=False,
             description="The first manga chapter where the character appears",
         ),
