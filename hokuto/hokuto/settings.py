@@ -17,6 +17,7 @@ ROOT = os.path.abspath(os.path.join(HERE, "..", ".."))
 BOT_NAME = os.path.split(HERE)[1]
 
 # Crawl responsibly by identifying yourself on the user-agent
+# TODO: add user agent
 USER_AGENT = f"{BOT_NAME}(+http://www.yourdomain.com)"
 
 # Obey robots.txt rules

@@ -12,7 +12,7 @@ import logging
 import argparse
 from redis.exceptions import ConnectionError
 from argparse import RawDescriptionHelpFormatter
-from dotenv import find_dotenv, load_dotenv, get_key
+from dotenv import find_dotenv, load_dotenv
 from sqlalchemy.exc import OperationalError
 from db_utils import bulk_insert
 
@@ -27,26 +27,20 @@ ch.setLevel(logging.DEBUG)
 ch.setFormatter(formatter)
 logger.addHandler(ch)
 
-DOTENV_PATH = find_dotenv(".env")
-load_dotenv(DOTENV_PATH)
 
 HERE = os.path.abspath(os.path.dirname(__file__))
 ROOT = os.path.abspath(os.path.join(HERE, ".."))
 
-REDIS_PORT = get_key(DOTENV_PATH, "REDIS_PORT")
-REDIS_HOST = get_key(DOTENV_PATH, "REDIS_HOST")
-DB_URI = get_key(DOTENV_PATH, "DB_URI")
+if "DYNO" in os.environ:
+    print("the app is on Heroku")
+else:
+    DOTENV_PATH = find_dotenv(".env")
+    load_dotenv(DOTENV_PATH)
 
-ITEMS_KEY = "characters_redis:items"
-
-if not REDIS_HOST:
-    raise KeyError("REDIS_HOST environment variable not set.")
-
-if not REDIS_PORT:
-    raise KeyError("REDIS_PORT environment variable not set.")
-
-if not DB_URI:
-    raise KeyError("DB_URI environment variable not set.")
+REDIS_PORT = os.environ["REDIS_PORT"]
+REDIS_HOST = os.environ["REDIS_HOST"]
+DB_URI = os.environ["DB_URI"]
+REDIS_ITEMS_KEY = os.environ["REDIS_CHARACTERS_KEY"]
 
 
 def parse_args():
@@ -73,6 +67,17 @@ def parse_args():
     return parser.parse_args()
 
 
+def is_valid(d):
+    boolean = all(
+        [
+            v is not None
+            for k, v in d.items()
+            if k in ("name", "name_kanji", "name_romaji")
+        ]
+    )
+    return boolean
+
+
 def fetch_scraped_items(rd, key, i_start, i_stop):
     """
 
@@ -89,36 +94,56 @@ def fetch_scraped_items(rd, key, i_start, i_stop):
     """
     redis_items = rd.lrange(key, i_start, i_stop)
     characters = []
+    categories = []
     voice_actors = []
     fighting_styles = []
+    family_members = []
+    allegiances = []
     n_invalid = 0
     for ri in redis_items:
         item = json.loads(ri)
-        if item["is_valid"]:
-            character = {
-                "name_romaji": item["name_romaji"],
-                "name_kanji": item["name_kanji"],
-                "avatar": item["avatar"],
-                "url": item["url"],
-                "is_not_in_manga": item["appearances"]["is_not_in_manga"],
-                "first_anime_episode": item["appearances"]["first_anime_episode"],
-                "first_manga_chapter": item["appearances"]["first_manga_chapter"],
-            }
-            characters.append(character)
-
-            for voice_actor in item["voice_actors"]:
-                voice_actors.append(voice_actor)
-
-            for fighting_style in item["fighting_styles"]:
-                fighting_styles.append(fighting_style)
-        else:
+        if item["scraped_data"] is None:
+            logger.debug(
+                f"{item['url']} does not contain scraped data. Check the page and your spiders."
+            )
             n_invalid = n_invalid + 1
-            logger.warning(f"Invalid item {item}.")
+        else:
+            d = item["scraped_data"]
+            if is_valid(d):
+                character = {
+                    "name": d["name"],
+                    "name_romaji": d["name_romaji"],
+                    "name_kanji": d["name_kanji"],
+                    "avatar": d["avatar"],
+                    "first_appearance_anime": d["first_appearance"]["anime"],
+                    "first_appearance_manga": d["first_appearance"]["manga"],
+                }
+                characters.append(character)
+
+                for category in d["categories"]:
+                    categories.append(category)
+
+                for voice_actor in d["voice_actors"]:
+                    voice_actors.append(voice_actor)
+
+                for fighting_style in d["fighting_styles"]:
+                    fighting_styles.append(fighting_style)
+
+                for family_member in d["family_members"]:
+                    family_members.append(family_member)
+
+                for allegiance in d["allegiances"]:
+                    allegiances.append(allegiance)
+            else:
+                n_invalid = n_invalid + 1
+                logger.debug(
+                    f"{item['url']} contains invalid scraped data. Check the page and your spiders."
+                )
 
     n_fetched = i_stop - i_start
     msg = f"{n_fetched} items fetched from Redis ({n_invalid} invalid)."
     logger.debug(msg)
-    return characters, voice_actors, fighting_styles
+    return characters, categories, voice_actors, fighting_styles, family_members, allegiances
 
 
 def main():
@@ -135,9 +160,9 @@ def main():
 
     logger.debug(f"Connect to Redis on {info.host}:{info.port}")
     logger.debug(f"Clients connected: {clients}")
-    assert rd.type(ITEMS_KEY) == b"list"
-    num_items = rd.llen(ITEMS_KEY)
-    logger.debug(f"{num_items} items in {ITEMS_KEY}")
+    assert rd.type(REDIS_ITEMS_KEY) == b"list"
+    num_items = rd.llen(REDIS_ITEMS_KEY)
+    logger.debug(f"{num_items} items in {REDIS_ITEMS_KEY}")
 
     # TODO: what's the best way to handle redis fetching + postgres insertions?
     # fetch from redis, try to store in db, then only remove from redis if
@@ -148,8 +173,8 @@ def main():
     while n_processed < limit:
         i_start = n_processed
         i_stop = n_processed + args.batch
-        characters, voice_actors, fighting_styles = fetch_scraped_items(
-            rd, ITEMS_KEY, i_start, i_stop
+        characters, categories, voice_actors, fighting_styles, family_members, allegiances = fetch_scraped_items(
+            rd, REDIS_ITEMS_KEY, i_start, i_stop
         )
 
         # TODO: handle in a transaction for each table?

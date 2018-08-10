@@ -1,7 +1,9 @@
 """Spider to scrape all characters on Hokuto Renkitōza.
 """
+import os
 import logging
 import datetime
+from dotenv import find_dotenv, load_dotenv
 from scrapy.spiders import Rule, CrawlSpider
 from scrapy.linkextractors import LinkExtractor
 from ..settings import BOT_NAME
@@ -20,6 +22,14 @@ logger.addHandler(ch)
 # https://en.wikipedia.org/wiki/List_of_Fist_of_the_North_Star_chapters
 LAST_MANGA_CHAPTER = 245
 LAST_ANIME_EPISODE = 152
+
+if "DYNO" in os.environ:
+    print("the app is on Heroku")
+else:
+    DOTENV_PATH = find_dotenv(".env")
+    load_dotenv(DOTENV_PATH)
+
+REDIS_ITEMS_KEY = os.environ["REDIS_CHARACTERS_KEY"]
 
 
 def extract_voice_actor(selector):
@@ -214,7 +224,9 @@ class CharactersCrawler(CrawlSpider):
         "ITEM_PIPELINES": {
             f"{BOT_NAME}.pipelines.DropItemPipeline": 100,
             "scrapy_redis.pipelines.RedisPipeline": 300,
-        }
+        },
+        # REDIS_ITEMS_KEY is a setting for RedisPipeline
+        "REDIS_ITEMS_KEY": REDIS_ITEMS_KEY,
     }
 
     def parse_page(self, response):
