@@ -22,10 +22,16 @@ logger = logging.getLogger(__file__)
 logger.setLevel(logging.DEBUG)
 formatter_str = "%(asctime)s - %(levelname)s - %(message)s"
 formatter = logging.Formatter(formatter_str)
+
 ch = logging.StreamHandler()
 ch.setLevel(logging.DEBUG)
 ch.setFormatter(formatter)
 logger.addHandler(ch)
+
+fh = logging.FileHandler("process_items.log")
+fh.setLevel(logging.DEBUG)
+fh.setFormatter(formatter)
+logger.addHandler(fh)
 
 
 HERE = os.path.abspath(os.path.dirname(__file__))
@@ -50,16 +56,15 @@ def parse_args():
     parser.add_argument(
         "-l",
         "--limit",
-        type=int,
-        default=100,
-        help="Number of items to fetch from Redis",
+        default=None,
+        help="Num. of items to fetch from Redis (default: None -> fetch all)",
     )
     parser.add_argument(
         "-b",
         "--batch",
         type=int,
-        default=10,
-        help="Batch size (number of items to fetch from Redis at a time)",
+        default=50,
+        help="Num. of items to fetch from Redis at a time (default: 50)",
     )
     parser.add_argument(
         "-v", "--verbose", action="store_true", help="If set, increase verbosity"
@@ -67,15 +72,56 @@ def parse_args():
     return parser.parse_args()
 
 
-def is_valid(d):
-    boolean = all(
-        [
-            v is not None
-            for k, v in d.items()
-            if k in ("name", "name_kanji", "name_romaji")
-        ]
-    )
+def is_valid(item):
+    if item.get("scraped_data") is None:
+        boolean = False
+    else:
+        d = item["scraped_data"]
+        boolean = all(
+            [
+                v is not None
+                for k, v in d.items()
+                if k in ("name", "name_kanji", "name_romaji")
+            ]
+        )
     return boolean
+
+
+def sanitize_scraped_data(item):
+    d = item["scraped_data"]
+    try:
+        first_appearance_anime = d["first_appearance"]["anime"]
+    except KeyError:
+        first_appearance_anime = None
+    try:
+        first_appearance_manga = d["first_appearance"]["manga"]
+    except KeyError:
+        first_appearance_manga = None
+
+    avatar = d["avatar"] if d.get("avatar") else None
+    character = {
+        "name": d["name"],
+        "name_romaji": d["name_romaji"],
+        "name_kanji": d["name_kanji"],
+        "url": item["url"],
+        "avatar": avatar,
+        "first_appearance_anime": first_appearance_anime,
+        "first_appearance_manga": first_appearance_manga,
+    }
+    categories = d["categories"] if d.get("categories") else []
+    voice_actors = d["voice_actors"] if d.get("voice_actors") else []
+    fighting_styles = d["fighting_styles"] if d.get("fighting_styles") else []
+    family_members = d["family_members"] if d.get("family_members") else []
+    allegiances = d["allegiances"] if d.get("allegiances") else []
+    d_ = {
+        "character": character,
+        "categories": categories,
+        "voice_actors": voice_actors,
+        "fighting_styles": fighting_styles,
+        "family_members": family_members,
+        "allegiances": allegiances,
+    }
+    return d_
 
 
 def fetch_scraped_items(rd, key, i_start, i_stop):
@@ -108,31 +154,23 @@ def fetch_scraped_items(rd, key, i_start, i_stop):
             )
             n_invalid = n_invalid + 1
         else:
-            d = item["scraped_data"]
-            if is_valid(d):
-                character = {
-                    "name": d["name"],
-                    "name_romaji": d["name_romaji"],
-                    "name_kanji": d["name_kanji"],
-                    "avatar": d["avatar"],
-                    "first_appearance_anime": d["first_appearance"]["anime"],
-                    "first_appearance_manga": d["first_appearance"]["manga"],
-                }
-                characters.append(character)
+            if is_valid(item):
+                d_ = sanitize_scraped_data(item)
+                characters.append(d_["character"])
 
-                for category in d["categories"]:
+                for category in d_["categories"]:
                     categories.append(category)
 
-                for voice_actor in d["voice_actors"]:
+                for voice_actor in d_["voice_actors"]:
                     voice_actors.append(voice_actor)
 
-                for fighting_style in d["fighting_styles"]:
+                for fighting_style in d_["fighting_styles"]:
                     fighting_styles.append(fighting_style)
 
-                for family_member in d["family_members"]:
+                for family_member in d_["family_members"]:
                     family_members.append(family_member)
 
-                for allegiance in d["allegiances"]:
+                for allegiance in d_["allegiances"]:
                     allegiances.append(allegiance)
             else:
                 n_invalid = n_invalid + 1
@@ -169,7 +207,10 @@ def main():
     # database write was successful?
 
     n_processed = 0
-    limit = min(args.limit, num_items)
+    if args.limit is None:
+        limit = num_items
+    else:
+        limit = int(args.limit)
     while n_processed < limit:
         i_start = n_processed
         i_stop = n_processed + args.batch
@@ -197,11 +238,13 @@ def main():
             logger.error(e)
 
         n_processed = n_processed + args.batch
-        # rd.lpop() or rd.blpop()?
 
-        print(f"Characters {i_start} - {i_stop}")
-        for character in characters:
-            print(character)
+
+# rd.lpop() or rd.blpop()?
+
+# print(f"Characters {i_start} - {i_stop}")
+# for character in characters:
+#     print(character)
 
 
 # engine = sa.create_engine(DB_URI)

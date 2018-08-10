@@ -21,6 +21,4 @@ def extensions(app):
     """Register 0 or more extensions (mutates the app passed in)."""
     db.init_app(app)
     migrate.init_app(app, db)
-    # from flask_migrate import downgrade
-    # downgrade(revision="base")
     return None

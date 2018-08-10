@@ -4,3 +4,4 @@ __pycache__/
 *.db
 *.jsonl
 .env
+*.log
