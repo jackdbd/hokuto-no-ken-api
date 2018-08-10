@@ -10,7 +10,6 @@ class CharacterModel(db.Model):
     name_romaji = db.Column(db.String(64), index=True, nullable=False)
     avatar = db.Column(db.String(128), nullable=True)
     url = db.Column(db.String(128), nullable=True)
-    is_not_in_manga = db.Column(db.Boolean, nullable=False)
     first_appearance_anime = db.Column(db.Integer, nullable=True)
     first_appearance_manga = db.Column(db.Integer, nullable=True)
 
