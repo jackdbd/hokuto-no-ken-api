@@ -20,15 +20,16 @@ def upgrade():
     op.create_table(
         "characters",
         sa.Column("id", sa.Integer(), nullable=False),
+        sa.Column("name", sa.String(length=32), nullable=False),
         sa.Column("name_kanji", sa.String(length=16), nullable=False),
         sa.Column("name_romaji", sa.String(length=64), nullable=False),
         sa.Column("avatar", sa.String(length=128), nullable=True),
         sa.Column("url", sa.String(length=128), nullable=True),
-        sa.Column("is_not_in_manga", sa.Boolean(), nullable=False),
-        sa.Column("first_anime_episode", sa.Integer(), nullable=True),
-        sa.Column("first_manga_chapter", sa.Integer(), nullable=True),
+        sa.Column("first_appearance_anime", sa.Integer(), nullable=True),
+        sa.Column("first_appearance_manga", sa.Integer(), nullable=True),
         sa.PrimaryKeyConstraint("id"),
     )
+    op.create_index(op.f("ix_characters_name"), "characters", ["name"], unique=False)
     op.create_index(
         op.f("ix_characters_name_kanji"), "characters", ["name_kanji"], unique=False
     )
@@ -40,4 +41,5 @@ def upgrade():
 def downgrade():
     op.drop_index(op.f("ix_characters_name_romaji"), table_name="characters")
     op.drop_index(op.f("ix_characters_name_kanji"), table_name="characters")
+    op.drop_index(op.f("ix_characters_name"), table_name="characters")
     op.drop_table("characters")

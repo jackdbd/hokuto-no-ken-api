@@ -1,9 +1,9 @@
 """Process scraped items from a Redis queue and populate a database.
 
 Usage:
-    $ python updater.py
+    $ python process_items.py
     # fetch 300 (limit) items from Redis, 20 (batch) at a time
-    $ python updater.py -l 300 -b 20
+    $ python process_items.py -l 300 -b 20
 """
 import os
 import json
@@ -13,7 +13,7 @@ import argparse
 from redis.exceptions import ConnectionError
 from argparse import RawDescriptionHelpFormatter
 from dotenv import find_dotenv, load_dotenv
-from sqlalchemy.exc import OperationalError
+from sqlalchemy.exc import OperationalError, IntegrityError
 from db_utils import bulk_insert
 
 # TODO: fix logger
@@ -37,16 +37,22 @@ logger.addHandler(fh)
 HERE = os.path.abspath(os.path.dirname(__file__))
 ROOT = os.path.abspath(os.path.join(HERE, ".."))
 
-if "DYNO" in os.environ:
-    print("the app is on Heroku")
-else:
-    DOTENV_PATH = find_dotenv(".env")
-    load_dotenv(DOTENV_PATH)
+DOTENV_PATH = find_dotenv(".env")
+load_dotenv(DOTENV_PATH)
 
-REDIS_PORT = os.environ["REDIS_PORT"]
-REDIS_HOST = os.environ["REDIS_HOST"]
-DB_URI = os.environ["DB_URI"]
-REDIS_ITEMS_KEY = os.environ["REDIS_CHARACTERS_KEY"]
+if os.environ["ENVIRONMENT"] == "dev":
+    REDIS_PORT = os.environ["REDIS_PORT"]
+    REDIS_HOST = os.environ["REDIS_HOST_DEV"]
+    DB_URI = f"sqlite:///{HERE}/{os.environ['DB_NAME_DEV']}"
+    REDIS_ITEMS_KEY = os.environ["REDIS_CHARACTERS_KEY"]
+elif os.environ["ENVIRONMENT"] == "prod":
+    REDIS_PORT = os.environ["REDIS_PORT"]
+    REDIS_HOST = os.environ["REDIS_HOST_PROD"]
+    DB_URI = os.environ["DB_URI_PROD"]
+    REDIS_ITEMS_KEY = os.environ["REDIS_CHARACTERS_KEY"]
+else:
+    msg = f"Cannot run in a {os.environ['ENVIRONMENT']} environment"
+    raise KeyError(msg)
 
 
 def parse_args():
@@ -220,22 +226,35 @@ def main():
 
         # TODO: handle in a transaction for each table?
 
-        try:
+        # TODO: if there was an error in writing the database, it's better not
+        # to remove the items from the Redis queue and investigate
+
+        if characters:
             bulk_insert(DB_URI, "characters", characters)
-        except OperationalError as e:
-            # TODO: if there was an error in writing the database, it's better
-            # not to remove the items from the Redis queue and investigate
-            logger.error(e)
+            # try:
+            #     bulk_insert(DB_URI, "characters", characters)
+            # except OperationalError as e:
+            #     logger.error(e)
+            # except IntegrityError as e:
+            #     logger.error(e)
 
-        try:
+        if voice_actors:
             bulk_insert(DB_URI, "voice_actors", voice_actors)
-        except OperationalError as e:
-            logger.error(e)
+            # try:
+            #     bulk_insert(DB_URI, "voice_actors", voice_actors)
+            # except OperationalError as e:
+            #     logger.error(e)
+            # except IntegrityError as e:
+            #     logger.error(e)
 
-        try:
+        if fighting_styles:
             bulk_insert(DB_URI, "fighting_styles", fighting_styles)
-        except OperationalError as e:
-            logger.error(e)
+            # try:
+            #     bulk_insert(DB_URI, "fighting_styles", fighting_styles)
+            # except OperationalError as e:
+            #     logger.error(e)
+            # except IntegrityError as e:
+            #     logger.error(e)
 
         n_processed = n_processed + args.batch
 

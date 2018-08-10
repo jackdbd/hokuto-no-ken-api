@@ -1,11 +1,15 @@
 import logging
 import sqlalchemy as sa
-from sqlalchemy.exc import OperationalError
+from sqlalchemy.exc import OperationalError, IntegrityError
 
 
 # logging.basicConfig(level=logging.DEBUG)
-# logger = logging.getLogger("sqlalchemy.engine.base")
+logger = logging.getLogger("sqlalchemy.engine.base")
 # logger.setLevel(logging.DEBUG)
+# logger = logging.getLogger(__file__)
+logger.setLevel(logging.DEBUG)
+formatter_str = "%(asctime)s - %(levelname)s - %(message)s"
+formatter = logging.Formatter(formatter_str)
 
 
 def get_table(engine, table_name):
@@ -26,12 +30,7 @@ def get_table(engine, table_name):
 
 def bulk_insert(db_uri, table_name, data):
     engine = sa.create_engine(db_uri)
-    try:
-        conn = engine.connect()
-    except OperationalError as e:
-        e.add_detail("CANNOT CONNECT TO DB")
-        raise e
-
+    conn = engine.connect()
     table = get_table(engine, table_name)
     clause = table.insert()
     conn.execute(clause, data)
