@@ -2,8 +2,8 @@
 
 Usage:
     $ python process_items.py
-    # fetch 300 (limit) items from Redis, 20 (batch) at a time
-    $ python process_items.py -l 300 -b 20
+    # fetch 300 (limit) items from Redis, 20 (batch) at a time, verbose
+    $ python process_items.py -l 300 -b 20 -v
 """
 import os
 import json
@@ -14,19 +14,15 @@ from redis.exceptions import ConnectionError
 from argparse import RawDescriptionHelpFormatter
 from dotenv import find_dotenv, load_dotenv
 from sqlalchemy.exc import OperationalError, IntegrityError
-from db_utils import bulk_insert
+from db_utils import bulk_insert, alembic_revision
 
-# TODO: fix logger
-# logger = logging.getLogger("sqlalchemy.engine.base")
-logger = logging.getLogger(__file__)
+
+logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
-formatter_str = "%(asctime)s - %(levelname)s - %(message)s"
+formatter_str = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 formatter = logging.Formatter(formatter_str)
 
 ch = logging.StreamHandler()
-ch.setLevel(logging.DEBUG)
-ch.setFormatter(formatter)
-logger.addHandler(ch)
 
 fh = logging.FileHandler("process_items.log")
 fh.setLevel(logging.DEBUG)
@@ -95,16 +91,15 @@ def is_valid(item):
 
 def sanitize_scraped_data(item):
     d = item["scraped_data"]
-    try:
+    avatar = d["avatar"] if d.get("avatar") else None
+
+    if d.get("first_appearance"):
         first_appearance_anime = d["first_appearance"]["anime"]
-    except KeyError:
-        first_appearance_anime = None
-    try:
         first_appearance_manga = d["first_appearance"]["manga"]
-    except KeyError:
+    else:
+        first_appearance_anime = None
         first_appearance_manga = None
 
-    avatar = d["avatar"] if d.get("avatar") else None
     character = {
         "name": d["name"],
         "name_romaji": d["name_romaji"],
@@ -155,9 +150,7 @@ def fetch_scraped_items(rd, key, i_start, i_stop):
     for ri in redis_items:
         item = json.loads(ri)
         if item["scraped_data"] is None:
-            logger.debug(
-                f"{item['url']} does not contain scraped data. Check the page and your spiders."
-            )
+            logger.warning(f"{item['url']} does not contain scraped data.")
             n_invalid = n_invalid + 1
         else:
             if is_valid(item):
@@ -180,13 +173,10 @@ def fetch_scraped_items(rd, key, i_start, i_stop):
                     allegiances.append(allegiance)
             else:
                 n_invalid = n_invalid + 1
-                logger.debug(
-                    f"{item['url']} contains invalid scraped data. Check the page and your spiders."
-                )
+                logger.warning(f"{item['url']} contains invalid scraped data.")
 
     n_fetched = i_stop - i_start
-    msg = f"{n_fetched} items fetched from Redis ({n_invalid} invalid)."
-    logger.debug(msg)
+    logger.info(f"{n_fetched} items fetched from Redis ({n_invalid} invalid).")
     return characters, categories, voice_actors, fighting_styles, family_members, allegiances
 
 
@@ -194,6 +184,13 @@ def main():
     # TODO: secure Redis https://redislabs.com/lp/python-redis/
     # TODO: can I obfuscate redis commands with redis-py?
     args = parse_args()
+    if args.verbose:
+        ch.setLevel(logging.DEBUG)
+    else:
+        ch.setLevel(logging.WARNING)
+    ch.setFormatter(formatter)
+    logger.addHandler(ch)
+
     rd = redis.StrictRedis(host=REDIS_HOST, port=REDIS_PORT)
     info = rd.connection_pool.get_connection("info")
     try:
@@ -212,6 +209,8 @@ def main():
     # fetch from redis, try to store in db, then only remove from redis if
     # database write was successful?
 
+    db_revision = alembic_revision(DB_URI)
+
     n_processed = 0
     if args.limit is None:
         limit = num_items
@@ -220,6 +219,7 @@ def main():
     while n_processed < limit:
         i_start = n_processed
         i_stop = n_processed + args.batch
+        logger.info(f"Processing items [{i_start} - {i_stop}]")
         characters, categories, voice_actors, fighting_styles, family_members, allegiances = fetch_scraped_items(
             rd, REDIS_ITEMS_KEY, i_start, i_stop
         )
@@ -231,30 +231,30 @@ def main():
 
         if characters:
             bulk_insert(DB_URI, "characters", characters)
-            # try:
-            #     bulk_insert(DB_URI, "characters", characters)
-            # except OperationalError as e:
-            #     logger.error(e)
-            # except IntegrityError as e:
-            #     logger.error(e)
+        # try:
+        #     bulk_insert(DB_URI, "characters", characters)
+        # except OperationalError as e:
+        #     logger.error(e)
+        # except IntegrityError as e:
+        #     logger.error(e)
 
         if voice_actors:
             bulk_insert(DB_URI, "voice_actors", voice_actors)
-            # try:
-            #     bulk_insert(DB_URI, "voice_actors", voice_actors)
-            # except OperationalError as e:
-            #     logger.error(e)
-            # except IntegrityError as e:
-            #     logger.error(e)
+        # try:
+        #     bulk_insert(DB_URI, "voice_actors", voice_actors)
+        # except OperationalError as e:
+        #     logger.error(e)
+        # except IntegrityError as e:
+        #     logger.error(e)
 
         if fighting_styles:
             bulk_insert(DB_URI, "fighting_styles", fighting_styles)
-            # try:
-            #     bulk_insert(DB_URI, "fighting_styles", fighting_styles)
-            # except OperationalError as e:
-            #     logger.error(e)
-            # except IntegrityError as e:
-            #     logger.error(e)
+        # try:
+        #     bulk_insert(DB_URI, "fighting_styles", fighting_styles)
+        # except OperationalError as e:
+        #     logger.error(e)
+        # except IntegrityError as e:
+        #     logger.error(e)
 
         n_processed = n_processed + args.batch
 
