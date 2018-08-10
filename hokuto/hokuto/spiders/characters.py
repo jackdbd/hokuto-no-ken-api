@@ -1,4 +1,13 @@
-"""Spider to scrape all characters on Hokuto Renkitōza.
+"""Spider to extract characters's data on Hokuto Renkitōza.
+
+This spider crawls all character list pages (it does NOT follow links) and tries
+to scrape the character's data. The scraped data is serialized and pushed to a
+Redis queue thanks to scrapy_redis.
+
+Usage:
+    python main.py -s characters
+    # or with the scrapy CLI
+    scrapy crawl characters
 """
 import os
 import logging
@@ -197,8 +206,8 @@ def scrape_page(selector_list, url):
     return d
 
 
-class CharactersCrawler(CrawlSpider):
-    name = "characters_crawler"
+class Characters(CrawlSpider):
+    name = "characters"
     allowed_domains = ["hokuto.wikia.com"]
     start_urls = [
         "http://hokuto.wikia.com/wiki/List_of_Hokuto_no_Ken_characters",

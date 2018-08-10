@@ -1,14 +1,28 @@
+import os
 from flask import Flask
 from werkzeug.contrib.fixers import ProxyFix
-from .config import Config
+from dotenv import find_dotenv, load_dotenv
+from .config import ConfigDev, ConfigTest, ConfigProd
 from .blueprints import api, page
 from .extensions import db, migrate
+
+
+load_dotenv(find_dotenv(".env"))
+ENV = os.environ["ENVIRONMENT"]
 
 
 def create_app():
     """Create a Flask WSGI application using the app factory pattern."""
     app = Flask(__name__)
-    app.config.from_object(Config)
+    if ENV == "dev":
+        app.config.from_object(ConfigDev)
+    elif ENV == "test":
+        app.config.from_object(ConfigTest)
+    elif ENV == "prod":
+        app.config.from_object(ConfigProd)
+    else:
+        raise KeyError("Set ENVIRONMENT")
+
     # print("app.config\n", app.config)
     app.wsgi_app = ProxyFix(app.wsgi_app)
     app.register_blueprint(api)

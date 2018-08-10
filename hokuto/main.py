@@ -1,7 +1,7 @@
 """Script to launch spiders.
 
 Usage:
-    $ python main.py -s characters
+    $ python manage.py -s characters
 """
 import os
 import argparse
@@ -17,7 +17,7 @@ def parse_args():
         description=__doc__, formatter_class=RawDescriptionHelpFormatter
     )
     parser.add_argument(
-        "-s", "--spider", type=str, choices=["characters_crawler"], help="Spider to run"
+        "-s", "--spider", type=str, choices=["characters"], help="Spider to run"
     )
     parser.add_argument(
         "-o", "--output", action="store_true", help="If set, generate JSON Lines output"
