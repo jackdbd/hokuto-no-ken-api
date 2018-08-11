@@ -1,4 +1,4 @@
-"""empty message
+"""Update characters.name datatype.
 
 Revision ID: 596c44b4db2a
 Revises: 43d723a00edc
