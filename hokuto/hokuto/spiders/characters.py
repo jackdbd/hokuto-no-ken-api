@@ -42,33 +42,33 @@ REDIS_ITEMS_KEY = os.environ["REDIS_CHARACTERS_KEY"]
 
 
 def extract_voice_actor(selector):
-    name = selector.xpath("text()").extract()[0]
-    title = selector.xpath("@title").extract()[0]
+    name = selector.xpath("text()").extract_first()
+    title = selector.xpath("@title").extract_first()
     if "page does not exist" in title:
         url = None
     else:
-        url = selector.xpath("@href").extract()[0]
+        url = selector.xpath("@href").extract_first()
     d = {"name": name, "url": url}
     return d
 
 
 def extract_fighting_style(selector):
-    name = selector.xpath("text()").extract()[0]
-    url = selector.xpath("@href").extract()[0]
+    name = selector.xpath("text()").extract_first()
+    url = selector.xpath("@href").extract_first()
     d = {"name": name, "url": url}
     return d
 
 
 def extract_family_member(selector):
-    name = selector.xpath("text()").extract()[0]
-    url = selector.xpath("@href").extract()[0]
+    name = selector.xpath("text()").extract_first()
+    url = selector.xpath("@href").extract_first()
     d = {"name": name, "url": url}
     return d
 
 
 def extract_allegiance(selector):
-    name = selector.xpath("text()").extract()[0]
-    url = selector.xpath("@href").extract()[0]
+    name = selector.xpath("text()").extract_first()
+    url = selector.xpath("@href").extract_first()
     d = {"name": name, "url": url}
     return d
 
@@ -255,8 +255,8 @@ class Characters(CrawlSpider):
             )
             categories = [
                 {
-                    "name": c.xpath("text()").extract(),
-                    "link": c.xpath("@href").extract(),
+                    "name": c.xpath("text()").extract_first(),
+                    "link": c.xpath("@href").extract_first(),
                 }
                 for c in selector_list
             ]
