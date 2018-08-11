@@ -2,7 +2,7 @@
 
 Since this Flask application uses the app factory pattern, this python module
 can be used to instantiate the Flask app. This is useful when starting the WSGI
-application with Gunicorn.
+application with Gunicorn (e.g. in a Procfile or in a Dockerfile).
 
 Usage:
     gunicorn --bind 0.0.0.0:$PORT --access-logfile - "app.wsgi:application"
