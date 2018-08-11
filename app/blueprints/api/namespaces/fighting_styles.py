@@ -8,7 +8,7 @@ ns = Namespace("fighting_styles", description="Fighting styles related operation
 fighting_style_api_model = ns.model(
     "Fighting Style",
     {
-        "id": fields.Integer(required=True, description="The fighting style's id"),
+        "id": fields.String(required=True, description="The fighting style's id"),
         "name": fields.String(required=True, description="The fighting style"),
         "url": fields.String(
             required=False, description="URL to the fighting style's wiki"
@@ -28,7 +28,7 @@ class FightingStyleList(Resource):
         return fighting_styles
 
 
-@ns.route("/<int:fighting_style_id>")
+@ns.route("/<string:fighting_style_id>")
 @ns.param("fighting_style_id", "The fighting style's identifier")
 class FightingStyle(Resource):
 

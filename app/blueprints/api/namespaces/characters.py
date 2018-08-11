@@ -8,13 +8,13 @@ ns = Namespace("characters", description="Characters related operations.")
 character_api_model = ns.model(
     "Character",
     {
-        "id": fields.Integer(required=True, description="The character's id"),
+        "id": fields.String(required=True, description="The character's id"),
         "name": fields.String(required=True, description="The character's name"),
         "name_romaji": fields.String(
-            required=True, description="The character's name (in romaji)"
+            required=False, description="The character's name (in romaji)"
         ),
         "name_kanji": fields.String(
-            required=True, description="The character's name (in kanji)"
+            required=False, description="The character's name (in kanji)"
         ),
         "avatar": fields.String(
             required=False, description="The character's avatar on Hokuto Renkitōza"
@@ -29,10 +29,6 @@ character_api_model = ns.model(
         "first_appearance_manga": fields.Integer(
             required=False,
             description="The first manga chapter where the character appears",
-        ),
-        "is_not_in_manga": fields.Boolean(
-            required=True,
-            description="True if the character did not appear in the original mange",
         ),
     },
 )
@@ -49,7 +45,7 @@ class CharacterList(Resource):
         return characters
 
 
-@ns.route("/<int:character_id>")
+@ns.route("/<string:character_id>")
 @ns.param("character_id", "The character's identifier")
 class Character(Resource):
 

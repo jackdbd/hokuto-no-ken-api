@@ -8,7 +8,7 @@ ns = Namespace("voice_actors", description="Voice Actors related operations.")
 voice_actor_api_model = ns.model(
     "Voice Actor",
     {
-        "id": fields.Integer(required=True, description="The voice actor's id"),
+        "id": fields.String(required=True, description="The voice actor's id"),
         "name": fields.String(required=True, description="The voice actor's name"),
         "url": fields.String(
             required=False, description="URL to the voice actor's wiki"
@@ -28,7 +28,7 @@ class VoiceActorList(Resource):
         return voice_actors
 
 
-@ns.route("/<int:voice_actor_id>")
+@ns.route("/<string:voice_actor_id>")
 @ns.param("voice_actor_id", "The voice actor's identifier")
 class VoiceActor(Resource):
 
