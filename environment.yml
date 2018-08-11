@@ -92,6 +92,7 @@ dependencies:
   - pyyaml==3.12
   - rsa==3.4.2
   - s3transfer==0.1.13
+  - scrapy-redis==0.6.8
   - service-identity==17.0.0
 prefix: /home/jack/miniconda3/envs/hokuto-no-ken-api
 
