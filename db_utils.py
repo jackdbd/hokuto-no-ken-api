@@ -35,6 +35,13 @@ def get_table(engine, table_name):
     return table
 
 
+def delete_all(db_uri, table_name):
+    logger.warning(f"Delete all records from table {table_name}")
+    engine = sa.create_engine(db_uri)
+    table = get_table(engine, table_name)
+    engine.execute(table.delete())
+
+
 def bulk_insert(db_uri, table_name, data):
     logger.debug(f"Bulk insert of {len(data)} records in DB")
     engine = sa.create_engine(db_uri)

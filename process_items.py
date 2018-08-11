@@ -1,9 +1,16 @@
 """Process scraped items from a Redis queue and populate a database.
 
+Don't forget to start the redis server with `redis-server`.
+During development, it might be useful to connect to the redis server with the
+redis native client. Launch it with `redis-cli`
+
 Usage:
     $ python process_items.py
-    # fetch 300 (limit) items from Redis, 20 (batch) at a time, verbose
+    # fetch 300 (limit) items from Redis, 20 (batch) at a time, verbose output
     $ python process_items.py -l 300 -b 20 -v
+    # fetch all items from Redis, 50 at a time (default batch), delete all
+    # records from all tables in the database
+    $ python process_items.py -d
 """
 import os
 import copy
@@ -16,7 +23,12 @@ from hashlib import md5
 from argparse import RawDescriptionHelpFormatter
 from dotenv import find_dotenv, load_dotenv
 from sqlalchemy.exc import OperationalError, IntegrityError
-from db_utils import bulk_insert, alembic_revision
+from db_utils import bulk_insert, alembic_revision, delete_all
+
+
+# TODO: add flag to cleanup the redis queue
+# TODO: add flag to drop all data from the db tables (or maybe drop all the
+# database and re-run migrations)
 
 
 logger = logging.getLogger(__name__)
@@ -71,7 +83,14 @@ def parse_args():
         help="Num. of items to fetch from Redis at a time (default: 50)",
     )
     parser.add_argument(
-        "-v", "--verbose", action="store_true", help="If set, increase verbosity"
+        "-d",
+        "--delete",
+        action="store_true",
+        help="If set, delete all records from all database tables before"
+        "processing data from Redis",
+    )
+    parser.add_argument(
+        "-v", "--verbose", action="store_true", help="If set, increase output verbosity"
     )
     return parser.parse_args()
 
@@ -242,6 +261,13 @@ def main():
     # database write was successful?
 
     db_revision = alembic_revision(DB_URI)
+    logger.info(f"Database version: {db_revision}")
+
+    if args.delete:
+        delete_all(DB_URI, "characters_voice_actors")
+        delete_all(DB_URI, "characters")
+        delete_all(DB_URI, "voice_actors")
+        delete_all(DB_URI, "fighting_styles")
 
     n_processed = 0
     if args.limit is None:
@@ -258,43 +284,37 @@ def main():
 
         # TODO: if there was an error in writing the database, it's better not
         # to remove the items from the Redis queue and investigate
-        table_names = (
-            "characters", "voice_actors", "fighting_styles", "characters_voice_actors"
-        )
+
+        # TODO: fix sqlalchemy.exc.OperationalError: (psycopg2.OperationalError)
+        # FATAL:  too many connections for role "<MY DB ROLE HERE>"
+        table_names = ("characters", "voice_actors", "fighting_styles")
         for table_name in table_names:
             table_data = [d["datum"] for d in data if d["table"] == table_name]
             if table_data:
-                bulk_insert(DB_URI, table_name, table_data)
+                try:
+                    bulk_insert(DB_URI, table_name, table_data)
+                except IntegrityError as e:
+                    logger.error(e)
+                except OperationalError as e:
+                    e.add_detail("FIXME")
+                    logger.critical(e)
 
-        # if characters:
-        #     bulk_insert(DB_URI, "characters", characters)
-        # try:
-        #     bulk_insert(DB_URI, "characters", characters)
-        # except OperationalError as e:
-        #     logger.error(e)
-        # except IntegrityError as e:
-        #     logger.error(e)
+        association_table_names = ("characters_voice_actors",)
+        for table_name in association_table_names:
+            table_data = [d["datum"] for d in data if d["table"] == table_name]
+            if table_data:
+                try:
+                    bulk_insert(DB_URI, table_name, table_data)
+                except IntegrityError as e:
+                    logger.error(e)
+                except OperationalError as e:
+                    e.add_detail("FIXME")
+                    logger.critical(e)
 
         n_processed = n_processed + args.batch
 
 
 # rd.lpop() or rd.blpop()?
-
-# print(f"Characters {i_start} - {i_stop}")
-# for character in characters:
-#     print(character)
-
-
-# engine = sa.create_engine(DB_URI)
-# conn = engine.connect()
-# result = conn.execute("""SELECT * FROM "characters";""")
-# for res in result.fetchall():
-#     logger.debug(res)
-
-
-# print(f"Result: {result.fetchall()}")
-
-
 # rd.keys()
 # rd.scan()
 # item = rd.lpop(ITEMS_KEY)
