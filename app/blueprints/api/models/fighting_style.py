@@ -3,9 +3,10 @@ from sqlalchemy.sql.expression import func
 
 
 class FightingStyleModel(db.Model):
+    """Database model for a fighting style in the Hokuto no Ken universe."""
     __tablename__ = "fighting_styles"
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(64), nullable=False)
+    id = db.Column(db.String(32), primary_key=True, autoincrement=False)
+    name = db.Column(db.String(64), index=True, unique=True, nullable=False)
     url = db.Column(db.String(128), nullable=True)
 
     def __repr__(self):
