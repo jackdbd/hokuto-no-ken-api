@@ -38,7 +38,8 @@ else:
     DOTENV_PATH = find_dotenv(".env")
     load_dotenv(DOTENV_PATH)
 
-REDIS_ITEMS_KEY = os.environ["REDIS_CHARACTERS_KEY"]
+REDIS_ITEMS_KEY = os.environ.get("REDIS_CHARACTERS_KEY")
+REDIS_PORT = os.environ.get("REDIS_PORT")
 
 
 def extract_voice_actor(selector):
@@ -236,6 +237,7 @@ class Characters(CrawlSpider):
         },
         # REDIS_ITEMS_KEY is a setting for RedisPipeline
         "REDIS_ITEMS_KEY": REDIS_ITEMS_KEY,
+        "REDIS_PORT": REDIS_PORT,
     }
 
     def parse_page(self, response):

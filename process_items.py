@@ -18,12 +18,13 @@ import json
 import redis
 import logging
 import argparse
+import sqlalchemy as sa
 from redis.exceptions import ConnectionError
 from hashlib import md5
 from argparse import RawDescriptionHelpFormatter
 from dotenv import find_dotenv, load_dotenv
 from sqlalchemy.exc import OperationalError, IntegrityError
-from db_utils import bulk_insert, alembic_revision, delete_all
+from db_utils import alembic_revision, delete_all, get_table
 
 
 # TODO: add flag to cleanup the redis queue
@@ -166,21 +167,22 @@ def sanitize(item):
     return item_sanitized
 
 
-def fetch_scraped_items(rd, key, i_start, i_stop):
-    """
+def extract_data(redis_items):
+    """Extract data from the web-scraped items found in Redis.
 
     Parameters
     ----------
-    rd : StrictRedis
-    key : str
-    i_start : int
-    i_stop : int
+    redis_items : list
+        scraped items from the Redis queu. Each item was serialized by the
+        scrapy_redis RedisPipeline.
 
     Returns
     -------
     data : list
+        entries sanitized and normalized, so they can be sent to the database.
+        Note that there might be duplicates. This must be handled later, when
+        trying to insert each datum into the respective table.
     """
-    redis_items = rd.lrange(key, i_start, i_stop)
     data = []
     n_invalid = 0
     for ri in redis_items:
@@ -226,8 +228,7 @@ def fetch_scraped_items(rd, key, i_start, i_stop):
                 n_invalid = n_invalid + 1
                 logger.warning(f"{item['url']} contains invalid scraped data.")
 
-    n_fetched = i_stop - i_start
-    logger.info(f"{n_fetched} items fetched from Redis ({n_invalid} invalid).")
+    logger.debug(f"{len(redis_items)} items from Redis --> {len(data)} data.")
     return data
 
 
@@ -254,47 +255,55 @@ def main():
     logger.debug(f"Clients connected: {clients}")
     assert rd.type(REDIS_ITEMS_KEY) == b"list"
     num_items = rd.llen(REDIS_ITEMS_KEY)
-    logger.debug(f"{num_items} items in {REDIS_ITEMS_KEY}")
+    logger.info(f"{num_items} items in {REDIS_ITEMS_KEY}")
 
     # TODO: what's the best way to handle redis fetching + postgres insertions?
     # fetch from redis, try to store in db, then only remove from redis if
     # database write was successful?
 
-    db_revision = alembic_revision(DB_URI)
+    engine = sa.create_engine(DB_URI)
+    conn = engine.connect()
+    db_revision = alembic_revision(conn)
     logger.info(f"Database version: {db_revision}")
 
     if args.delete:
-        delete_all(DB_URI, "characters_voice_actors")
-        delete_all(DB_URI, "characters")
-        delete_all(DB_URI, "voice_actors")
-        delete_all(DB_URI, "fighting_styles")
+        delete_all(engine, "characters_voice_actors")
+        delete_all(engine, "characters")
+        delete_all(engine, "voice_actors")
+        delete_all(engine, "fighting_styles")
 
-    n_processed = 0
     if args.limit is None:
         limit = num_items
     else:
         limit = int(args.limit)
-    while n_processed < limit:
-        i_start = n_processed
-        i_stop = n_processed + args.batch
-        logger.info(f"Processing items [{i_start} - {i_stop}]")
-        data = fetch_scraped_items(rd, REDIS_ITEMS_KEY, i_start, i_stop)
 
-        # TODO: handle in a transaction for each table?
+    i0 = 0
+    while i0 <= limit:
+        i1 = min(limit - 1, i0 + args.batch - 1)
+        logger.info(f"Processing items [{i0} - {i1}]")
+        redis_items = rd.lrange(REDIS_ITEMS_KEY, i0, i1)
+        logger.debug(f"{len(redis_items)} items found in Redis.")
+        data = extract_data(redis_items)
 
         # TODO: if there was an error in writing the database, it's better not
         # to remove the items from the Redis queue and investigate
 
-        # TODO: fix sqlalchemy.exc.OperationalError: (psycopg2.OperationalError)
-        # FATAL:  too many connections for role "<MY DB ROLE HERE>"
         table_names = ("characters", "voice_actors", "fighting_styles")
         for table_name in table_names:
             table_data = [d["datum"] for d in data if d["table"] == table_name]
             if table_data:
+                table = get_table(engine, table_name)
+                clause = table.insert()
                 try:
-                    bulk_insert(DB_URI, table_name, table_data)
+                    conn.execute(clause, data)
                 except IntegrityError as e:
+                    e.add_detail("Bulk insert failed. Insert one-by-one.")
                     logger.error(e)
+                    for datum in table_data:
+                        try:
+                            conn.execute(clause, datum)
+                        except IntegrityError as e:
+                            logger.error(e)
                 except OperationalError as e:
                     e.add_detail("FIXME")
                     logger.critical(e)
@@ -303,15 +312,24 @@ def main():
         for table_name in association_table_names:
             table_data = [d["datum"] for d in data if d["table"] == table_name]
             if table_data:
+                table = get_table(engine, table_name)
+                clause = table.insert()
                 try:
-                    bulk_insert(DB_URI, table_name, table_data)
+                    logger.debug(f"Try Bulk insert of {len(data)} records.")
+                    conn.execute(clause, data)
                 except IntegrityError as e:
+                    e.add_detail("Bulk insert failed. Insert one-by-one.")
                     logger.error(e)
+                    for datum in table_data:
+                        try:
+                            conn.execute(clause, datum)
+                        except IntegrityError as e:
+                            logger.error(e)
                 except OperationalError as e:
                     e.add_detail("FIXME")
                     logger.critical(e)
 
-        n_processed = n_processed + args.batch
+        i0 = i0 + args.batch
 
 
 # rd.lpop() or rd.blpop()?

@@ -35,25 +35,13 @@ def get_table(engine, table_name):
     return table
 
 
-def delete_all(db_uri, table_name):
+def delete_all(engine, table_name):
     logger.warning(f"Delete all records from table {table_name}")
-    engine = sa.create_engine(db_uri)
     table = get_table(engine, table_name)
     engine.execute(table.delete())
 
 
-def bulk_insert(db_uri, table_name, data):
-    logger.debug(f"Bulk insert of {len(data)} records in DB")
-    engine = sa.create_engine(db_uri)
-    conn = engine.connect()
-    table = get_table(engine, table_name)
-    clause = table.insert()
-    conn.execute(clause, data)
-
-
-def alembic_revision(db_uri):
-    engine = sa.create_engine(db_uri)
-    conn = engine.connect()
+def alembic_revision(conn):
     result = conn.execute("""SELECT * FROM "alembic_version";""").fetchone()
     db_revision = result._row[0]
     logger.info(f"DB revision (alembic_version): {db_revision}")
