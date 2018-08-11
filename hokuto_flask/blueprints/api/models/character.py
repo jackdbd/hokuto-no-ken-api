@@ -23,7 +23,7 @@ class CharacterModel(db.Model):
     """
     __tablename__ = "characters"
     id = db.Column(db.String(32), primary_key=True, autoincrement=False)
-    name = db.Column(db.String(16), index=True, unique=True, nullable=False)
+    name = db.Column(db.String(32), index=True, unique=True, nullable=False)
     name_kanji = db.Column(db.String(16), index=True, unique=False, nullable=False)
     name_romaji = db.Column(db.String(64), index=True, unique=False, nullable=False)
     avatar = db.Column(db.String(128), nullable=True)
