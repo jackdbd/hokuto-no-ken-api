@@ -6,11 +6,13 @@ Usage:
     $ python process_items.py -l 300 -b 20 -v
 """
 import os
+import copy
 import json
 import redis
 import logging
 import argparse
 from redis.exceptions import ConnectionError
+from hashlib import md5
 from argparse import RawDescriptionHelpFormatter
 from dotenv import find_dotenv, load_dotenv
 from sqlalchemy.exc import OperationalError, IntegrityError
@@ -89,7 +91,25 @@ def is_valid(item):
     return boolean
 
 
-def sanitize_scraped_data(item):
+def assign_ids(item, keys):
+
+    def assign_id(d):
+        id_ = md5(d["name"].encode("utf-8")).hexdigest()
+        d_ = {"id": id_, **d}
+        return d_
+
+    scraped_data = copy.deepcopy(item["scraped_data"])
+    for k in keys:
+        if isinstance(scraped_data[k], dict):
+            scraped_data[k] = assign_id(scraped_data[k])
+        else:
+            scraped_data[k] = [assign_id(d) for d in scraped_data[k]]
+
+    item_with_ids = {**item, "scraped_data": scraped_data}
+    return item_with_ids
+
+
+def sanitize(item):
     d = item["scraped_data"]
     avatar = d["avatar"] if d.get("avatar") else None
 
@@ -114,7 +134,7 @@ def sanitize_scraped_data(item):
     fighting_styles = d["fighting_styles"] if d.get("fighting_styles") else []
     family_members = d["family_members"] if d.get("family_members") else []
     allegiances = d["allegiances"] if d.get("allegiances") else []
-    d_ = {
+    sanitized = {
         "character": character,
         "categories": categories,
         "voice_actors": voice_actors,
@@ -122,7 +142,9 @@ def sanitize_scraped_data(item):
         "family_members": family_members,
         "allegiances": allegiances,
     }
-    return d_
+    scraped_data = {**d, **sanitized}
+    item_sanitized = {**item, "scraped_data": scraped_data}
+    return item_sanitized
 
 
 def fetch_scraped_items(rd, key, i_start, i_stop):
@@ -137,15 +159,10 @@ def fetch_scraped_items(rd, key, i_start, i_stop):
 
     Returns
     -------
-    characters, voice_actors, fighting_styles : list
+    data : list
     """
     redis_items = rd.lrange(key, i_start, i_stop)
-    characters = []
-    categories = []
-    voice_actors = []
-    fighting_styles = []
-    family_members = []
-    allegiances = []
+    data = []
     n_invalid = 0
     for ri in redis_items:
         item = json.loads(ri)
@@ -154,30 +171,45 @@ def fetch_scraped_items(rd, key, i_start, i_stop):
             n_invalid = n_invalid + 1
         else:
             if is_valid(item):
-                d_ = sanitize_scraped_data(item)
-                characters.append(d_["character"])
+                # sanitize first, then assign ids
+                item_sanitized = sanitize(item)
+                # find these keys in the item dict and assign an id to each one
+                keys = (
+                    "character",
+                    "categories",
+                    "voice_actors",
+                    "fighting_styles",
+                    "family_members",
+                    "allegiances",
+                )
+                item_with_ids = assign_ids(item_sanitized, keys)
 
-                for category in d_["categories"]:
-                    categories.append(category)
+                character = item_with_ids["scraped_data"]["character"]
+                data.append({"table": "characters", "datum": character})
 
-                for voice_actor in d_["voice_actors"]:
-                    voice_actors.append(voice_actor)
+                table_names = (
+                    "categories",
+                    "voice_actors",
+                    "fighting_styles",
+                    "family_members",
+                    "allegiances",
+                )
+                for table_name in table_names:
+                    for datum in item_with_ids["scraped_data"][table_name]:
+                        data.append({"table": table_name, "datum": datum})
 
-                for fighting_style in d_["fighting_styles"]:
-                    fighting_styles.append(fighting_style)
-
-                for family_member in d_["family_members"]:
-                    family_members.append(family_member)
-
-                for allegiance in d_["allegiances"]:
-                    allegiances.append(allegiance)
+                for va in item_with_ids["scraped_data"]["voice_actors"]:
+                    datum = {
+                        "character_id": character["id"], "voice_actor_id": va["id"]
+                    }
+                    data.append({"table": "characters_voice_actors", "datum": datum})
             else:
                 n_invalid = n_invalid + 1
                 logger.warning(f"{item['url']} contains invalid scraped data.")
 
     n_fetched = i_stop - i_start
     logger.info(f"{n_fetched} items fetched from Redis ({n_invalid} invalid).")
-    return characters, categories, voice_actors, fighting_styles, family_members, allegiances
+    return data
 
 
 def main():
@@ -220,37 +252,24 @@ def main():
         i_start = n_processed
         i_stop = n_processed + args.batch
         logger.info(f"Processing items [{i_start} - {i_stop}]")
-        characters, categories, voice_actors, fighting_styles, family_members, allegiances = fetch_scraped_items(
-            rd, REDIS_ITEMS_KEY, i_start, i_stop
-        )
+        data = fetch_scraped_items(rd, REDIS_ITEMS_KEY, i_start, i_stop)
 
         # TODO: handle in a transaction for each table?
 
         # TODO: if there was an error in writing the database, it's better not
         # to remove the items from the Redis queue and investigate
+        table_names = (
+            "characters", "voice_actors", "fighting_styles", "characters_voice_actors"
+        )
+        for table_name in table_names:
+            table_data = [d["datum"] for d in data if d["table"] == table_name]
+            if table_data:
+                bulk_insert(DB_URI, table_name, table_data)
 
-        if characters:
-            bulk_insert(DB_URI, "characters", characters)
+        # if characters:
+        #     bulk_insert(DB_URI, "characters", characters)
         # try:
         #     bulk_insert(DB_URI, "characters", characters)
-        # except OperationalError as e:
-        #     logger.error(e)
-        # except IntegrityError as e:
-        #     logger.error(e)
-
-        if voice_actors:
-            bulk_insert(DB_URI, "voice_actors", voice_actors)
-        # try:
-        #     bulk_insert(DB_URI, "voice_actors", voice_actors)
-        # except OperationalError as e:
-        #     logger.error(e)
-        # except IntegrityError as e:
-        #     logger.error(e)
-
-        if fighting_styles:
-            bulk_insert(DB_URI, "fighting_styles", fighting_styles)
-        # try:
-        #     bulk_insert(DB_URI, "fighting_styles", fighting_styles)
         # except OperationalError as e:
         #     logger.error(e)
         # except IntegrityError as e:
