@@ -4,6 +4,15 @@ from ..models import CharacterModel
 
 ns = Namespace("characters", description="Characters related operations.")
 
+voice_actor_in_character = ns.model(
+    "Voice actor who dubbed this character",
+    {
+        "id": fields.String(required=True),
+        "name": fields.String(required=True),
+        "url": fields.String(required=False),
+    },
+)
+
 
 character_api_model = ns.model(
     "Character",
@@ -30,6 +39,7 @@ character_api_model = ns.model(
             required=False,
             description="The first manga chapter where the character appears",
         ),
+        "voice_actors": fields.List(fields.Nested(voice_actor_in_character)),
     },
 )
 

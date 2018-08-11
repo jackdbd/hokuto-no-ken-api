@@ -4,6 +4,16 @@ from ..models import VoiceActorModel
 
 ns = Namespace("voice_actors", description="Voice Actors related operations.")
 
+character_in_voice_actor = ns.model(
+    "Character dubbed by this voice actor",
+    {
+        "id": fields.String(required=True),
+        "name": fields.String(required=True),
+        "name_romaji": fields.String(required=False),
+        "name_kanji": fields.String(required=False),
+        "url": fields.String(required=False),
+    },
+)
 
 voice_actor_api_model = ns.model(
     "Voice Actor",
@@ -13,6 +23,7 @@ voice_actor_api_model = ns.model(
         "url": fields.String(
             required=False, description="URL to the voice actor's wiki"
         ),
+        "characters": fields.List(fields.Nested(character_in_voice_actor)),
     },
 )
 
