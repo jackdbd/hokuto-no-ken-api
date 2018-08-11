@@ -1,17 +1,40 @@
-from app.extensions import db
 from sqlalchemy.sql.expression import func
+from app.extensions import db
+from .relationships import character_voice_actor_association_table
 
 
 class CharacterModel(db.Model):
+    """Database model for a character in the Hokuto no Ken universe.
+
+    A few considerations.
+
+    We cannot use autoincrement=True to generate an ID. We need a ID which
+    stays the same every time we scrape Hokuto Renkitōza. E.g. if one day we
+    scrape only Kenshiro, Kenshiro gets assigned ID = 1. If another day we
+    scrape Kaioh and Kenshiro, Kenshiro gets assigned ID = 2. The only thing
+    which seems unique across all scraped pages is the character's name.
+
+    name seems unique and always available when the spider was successful.
+    name_kanji and name_romaji might not be available and are not unique (e.g.
+    a few characters have the same name_kanji)
+
+    url can be NULL because a character might be listed in the wiki, but there
+    is not (yet) an associated character's page.
+    """
     __tablename__ = "characters"
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(16), index=True, nullable=False)
-    name_kanji = db.Column(db.String(16), index=True, nullable=False)
-    name_romaji = db.Column(db.String(64), index=True, nullable=False)
+    id = db.Column(db.String(32), primary_key=True, autoincrement=False)
+    name = db.Column(db.String(16), index=True, unique=True, nullable=False)
+    name_kanji = db.Column(db.String(16), index=True, unique=False, nullable=False)
+    name_romaji = db.Column(db.String(64), index=True, unique=False, nullable=False)
     avatar = db.Column(db.String(128), nullable=True)
     url = db.Column(db.String(128), nullable=True)
     first_appearance_anime = db.Column(db.Integer, nullable=True)
     first_appearance_manga = db.Column(db.Integer, nullable=True)
+    voice_actors = db.relationship(
+        "VoiceActor",
+        secondary=character_voice_actor_association_table,
+        backref="characters",
+    )
 
     def __repr__(self):
         return f"<{self.__class__.__name__} {self.id} {self.name_romaji} ({self.name_kanji})>"
