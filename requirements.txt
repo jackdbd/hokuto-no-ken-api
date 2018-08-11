@@ -21,6 +21,7 @@ Flask==1.0.2
 Flask-Migrate==2.2.1
 flask-restplus==0.11.0
 Flask-SQLAlchemy==2.3.2
+gunicorn==19.9.0
 hyperlink==17.3.1
 idna==2.7
 incremental==17.5.0
