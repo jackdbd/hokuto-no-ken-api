@@ -1,5 +1,6 @@
 from app.extensions import db
 from sqlalchemy.sql.expression import func
+from .relationships import character_voice_actor_association_table
 
 
 class VoiceActorModel(db.Model):
@@ -12,6 +13,11 @@ class VoiceActorModel(db.Model):
     id = db.Column(db.String(32), primary_key=True, autoincrement=False)
     name = db.Column(db.String(64), index=True, unique=True, nullable=False)
     url = db.Column(db.String(128), nullable=True)
+    # characters = db.relationship(
+    #     "Character",
+    #     secondary=character_voice_actor_association_table,
+    #     back_populates="voice_actors",
+    # )
 
     def __repr__(self):
         return f"<{self.__class__.__name__} {self.id} {self.name}>"
