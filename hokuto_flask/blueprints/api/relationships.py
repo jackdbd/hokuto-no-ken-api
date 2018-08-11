@@ -23,7 +23,7 @@ See Also
     http://docs.sqlalchemy.org/en/latest/orm/basic_relationships.html
     http://docs.sqlalchemy.org/en/latest/core/constraints.html
 """
-from app.extensions import db
+from hokuto_flask.extensions import db
 
 
 # characters - voice_actors (many to many)

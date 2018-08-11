@@ -11,7 +11,6 @@ See Also
     https://doc.scrapy.org/en/latest/topics/item-pipeline.html
 """
 from scrapy.exceptions import DropItem
-from scrapy_redis.pipelines import RedisPipeline
 
 
 class DropItemPipeline(object):
@@ -24,7 +23,3 @@ class DropItemPipeline(object):
 
         else:
             return item
-
-
-# class CharactersRedisPipeline(RedisPipeline):
-#     REDIS_ITEMS_KEY = "ss"

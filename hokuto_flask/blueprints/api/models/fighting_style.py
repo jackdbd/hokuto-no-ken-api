@@ -1,5 +1,5 @@
-from app.extensions import db
 from sqlalchemy.sql.expression import func
+from hokuto_flask.extensions import db
 
 
 class FightingStyleModel(db.Model):

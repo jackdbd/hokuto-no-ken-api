@@ -1,5 +1,5 @@
-from app.extensions import db
 from sqlalchemy.sql.expression import func
+from hokuto_flask.extensions import db
 from ..relationships import character_voice_actor_association
 
 

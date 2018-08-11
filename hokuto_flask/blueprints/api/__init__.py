@@ -3,11 +3,11 @@ from flask_restplus import Api
 from .namespaces import characters, voice_actors, fighting_styles
 
 
-blueprint = Blueprint(name="api", import_name=__name__, url_prefix="/api/v1")
+api_blueprint = Blueprint(name="api", import_name=__name__, url_prefix="/api/v1")
 
 
 api = Api(
-    blueprint,
+    api_blueprint,
     version="1.0.0",
     title="API",
     description="Hokuto no Ken API. Powered by Flask-RESTPlus.",

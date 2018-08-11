@@ -18,7 +18,7 @@ BOT_NAME = os.path.split(HERE)[1]
 
 # Crawl responsibly by identifying yourself on the user-agent
 # TODO: add user agent
-USER_AGENT = f"{BOT_NAME}(+http://www.yourdomain.com)"
+USER_AGENT = f"{BOT_NAME}(+https://github.com/jackdbd/hokuto-no-ken-api)"
 
 # Obey robots.txt rules
 ROBOTSTXT_OBEY = True
