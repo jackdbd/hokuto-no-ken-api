@@ -56,3 +56,21 @@ character_category_association = db.Table(
     ),
     db.UniqueConstraint("character_id", "category_id", name="character_id_category_id"),
 )
+
+# characters - fighting_styles (many to many)
+character_fighting_style_association = db.Table(
+    "characters_fighting_styles",
+    db.Model.metadata,
+    db.Column(
+        "character_id", db.String(32), db.ForeignKey("characters.id"), nullable=False
+    ),
+    db.Column(
+        "fighting_style_id",
+        db.String(32),
+        db.ForeignKey("fighting_styles.id"),
+        nullable=False,
+    ),
+    db.UniqueConstraint(
+        "character_id", "fighting_style_id", name="character_id_fighting_style_id"
+    ),
+)

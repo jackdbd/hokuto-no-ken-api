@@ -1,6 +1,10 @@
 from sqlalchemy.sql.expression import func
 from hokuto_flask.extensions import db
-from ..relationships import character_voice_actor_association, character_category_association
+from ..relationships import (
+    character_voice_actor_association,
+    character_category_association,
+    character_fighting_style_association,
+)
 
 
 class CharacterModel(db.Model):
@@ -38,6 +42,11 @@ class CharacterModel(db.Model):
     categories = db.relationship(
         "CategoryModel",
         secondary=character_category_association,
+        back_populates="characters",
+    )
+    fighting_styles = db.relationship(
+        "FightingStyleModel",
+        secondary=character_fighting_style_association,
         back_populates="characters",
     )
 
