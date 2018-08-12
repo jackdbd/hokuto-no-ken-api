@@ -12,8 +12,9 @@ class ConfigDev(object):
     DEBUG = True
     TESTING = False
     SECRET_KEY = os.environ.get("SECRET_KEY_DEV")
-    SQLALCHEMY_DATABASE_URI = f"sqlite:///{ROOT}/{os.environ.get('DB_NAME_DEV')}"
-    # SQLALCHEMY_DATABASE_URI = os.environ.get("DB_URI_PROD")
+    # TODO: fix Alembic migration scripts then switch to SQLite in development?
+    # SQLALCHEMY_DATABASE_URI = f"sqlite:///{ROOT}/{os.environ.get('DB_NAME_DEV')}"
+    SQLALCHEMY_DATABASE_URI = os.environ.get("DB_URI_PROD")
     # Show SQLAlchemy queries
     SQLALCHEMY_ECHO = True
     SQLALCHEMY_TRACK_MODIFICATIONS = True
