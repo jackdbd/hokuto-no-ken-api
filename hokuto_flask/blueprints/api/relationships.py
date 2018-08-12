@@ -77,7 +77,7 @@ character_fighting_style_association = db.Table(
 
 # family members (self-referential relationship)
 # characters - characters (many to many)
-family_membes = db.Table(
+family_members = db.Table(
     "family_members",
     db.Model.metadata,
     db.Column(
@@ -89,6 +89,27 @@ family_membes = db.Table(
     ),
     db.Column(
         "relative_right_id",
+        db.String(32),
+        db.ForeignKey("characters.id"),
+        nullable=False,
+        primary_key=True,
+    ),
+)
+
+# allegiances (self-referential relationship)
+# characters - characters (many to many)
+allegiances = db.Table(
+    "allegiances",
+    db.Model.metadata,
+    db.Column(
+        "ally_left_id",
+        db.String(32),
+        db.ForeignKey("characters.id"),
+        nullable=False,
+        primary_key=True,
+    ),
+    db.Column(
+        "ally_right_id",
         db.String(32),
         db.ForeignKey("characters.id"),
         nullable=False,

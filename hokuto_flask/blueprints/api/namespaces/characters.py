@@ -22,6 +22,26 @@ fighting_style_in_character = ns.model(
     },
 )
 
+category_in_character = ns.model(
+    "Category on Hokuto Renkitōza where this character can be found",
+    {
+        "id": fields.String(required=True),
+        "name": fields.String(required=True),
+        "url": fields.String(required=False),
+    },
+)
+
+family_member_in_character = ns.model(
+    "Family member of this character",
+    {
+        "id": fields.String(required=True),
+        "name": fields.String(required=True),
+        "name_romaji": fields.String(required=False),
+        "name_kanji": fields.String(required=False),
+        "url": fields.String(required=False),
+    },
+)
+
 
 character_api_model = ns.model(
     "Character",
@@ -50,6 +70,9 @@ character_api_model = ns.model(
         ),
         "voice_actors": fields.List(fields.Nested(voice_actor_in_character)),
         "fighting_styles": fields.List(fields.Nested(fighting_style_in_character)),
+        "categories": fields.List(fields.Nested(category_in_character)),
+        "right_relatives": fields.List(fields.Nested(family_member_in_character)),
+        "left_relatives": fields.List(fields.Nested(family_member_in_character)),
     },
 )
 
