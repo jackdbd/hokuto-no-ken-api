@@ -71,7 +71,7 @@ character_api_model = ns.model(
         "voice_actors": fields.List(fields.Nested(voice_actor_in_character)),
         "fighting_styles": fields.List(fields.Nested(fighting_style_in_character)),
         "categories": fields.List(fields.Nested(category_in_character)),
-        "relatives": fields.List(fields.Nested(another_character)),
+        "family_members": fields.List(fields.Nested(another_character)),
         "allies": fields.List(fields.Nested(another_character)),
     },
 )
