@@ -48,6 +48,53 @@ logger.addHandler(fh)
 HERE = os.path.abspath(os.path.dirname(__file__))
 ROOT = os.path.abspath(os.path.join(HERE, ".."))
 
+# item key in Redis --> DB table
+MAPPINGS_MODEL_TABLES = (
+    {"item_key": "character", "table": "characters"},
+    {"item_key": "voice_actors", "table": "voice_actors"},
+    {"item_key": "fighting_styles", "table": "fighting_styles"},
+    {"item_key": "categories", "table": "categories"},
+)
+
+# item key in Redis --> DB association table (relationship between tables)
+MAPPINGS_ASSOCIATION_TABLES = (
+    {
+        "item_key": "voice_actors",
+        "table": "characters_voice_actors",
+        "left": "character",
+        "col_left": "character_id",
+        "col_right": "voice_actor_id",
+    },
+    {
+        "item_key": "fighting_styles",
+        "table": "characters_fighting_styles",
+        "left": "character",
+        "col_left": "character_id",
+        "col_right": "fighting_style_id",
+    },
+    {
+        "item_key": "categories",
+        "table": "characters_categories",
+        "left": "character",
+        "col_left": "character_id",
+        "col_right": "category_id",
+    },
+    {
+        "item_key": "family_members",
+        "table": "family_members",
+        "left": "character",
+        "col_left": "relative_left_id",
+        "col_right": "relative_right_id",
+    },
+    {
+        "item_key": "allegiances",
+        "table": "allegiances",
+        "left": "character",
+        "col_left": "ally_left_id",
+        "col_right": "ally_right_id",
+    },
+)
+
 DOTENV_PATH = find_dotenv(".env")
 load_dotenv(DOTENV_PATH)
 ENV = os.environ.get("ENV")
@@ -197,42 +244,59 @@ def extract_data(redis_items):
             if is_valid(item):
                 # sanitize first, then assign ids
                 item_sanitized = sanitize(item)
-                # find these keys in the item dict and assign an id to each one
+                # The scraped item stored in Redis does not contain any IDs.
+                # Generate IDs for these fields before sending to DB.
                 keys = (
                     "character",
-                    "categories",
                     "voice_actors",
                     "fighting_styles",
+                    "categories",
                     "family_members",
                     "allegiances",
                 )
                 item_with_ids = assign_ids(item_sanitized, keys)
 
-                character = item_with_ids["scraped_data"]["character"]
-                data.append({"table": "characters", "datum": character})
+                for d in MAPPINGS_MODEL_TABLES:
+                    x = item_with_ids["scraped_data"][d["item_key"]]
+                    if isinstance(x, dict):
+                        datum = x
+                        data.append({"table": d["table"], "datum": datum})
+                    else:
+                        for datum in x:
+                            data.append({"table": d["table"], "datum": datum})
 
-                table_names = (
-                    "categories",
-                    "voice_actors",
-                    "fighting_styles",
-                    "family_members",
-                    "allegiances",
-                )
-                for table_name in table_names:
-                    for datum in item_with_ids["scraped_data"][table_name]:
-                        data.append({"table": table_name, "datum": datum})
-
-                for va in item_with_ids["scraped_data"]["voice_actors"]:
-                    datum = {
-                        "character_id": character["id"], "voice_actor_id": va["id"]
-                    }
-                    data.append({"table": "characters_voice_actors", "datum": datum})
+                for a in MAPPINGS_ASSOCIATION_TABLES:
+                    left = item_with_ids["scraped_data"][a["left"]]
+                    for right in item_with_ids["scraped_data"][a["item_key"]]:
+                        datum = {a["col_left"]: left["id"], a["col_right"]: right["id"]}
+                        data.append({"table": a["table"], "datum": datum})
             else:
                 n_invalid = n_invalid + 1
                 logger.warning(f"{item['url']} contains invalid scraped data.")
 
     logger.debug(f"{len(redis_items)} items from Redis --> {len(data)} data.")
     return data
+
+
+def store_in_db(engine, conn, table_names, data):
+    for table_name in table_names:
+        table_data = [d["datum"] for d in data if d["table"] == table_name]
+        if table_data:
+            table = get_table(engine, table_name)
+            clause = table.insert()
+            try:
+                conn.execute(clause, data)
+            except IntegrityError as e:
+                e.add_detail("Bulk insert failed. Insert one-by-one.")
+                logger.error(e)
+                for datum in table_data:
+                    try:
+                        conn.execute(clause, datum)
+                    except IntegrityError as e:
+                        logger.error(e)
+            except OperationalError as e:
+                e.add_detail("FIXME")
+                logger.critical(e)
 
 
 def main():
@@ -272,6 +336,7 @@ def main():
     if args.delete:
         delete_all(engine, "characters_voice_actors")
         delete_all(engine, "characters_categories")
+        delete_all(engine, "characters_fighting_styles")
         delete_all(engine, "characters")
         delete_all(engine, "voice_actors")
         delete_all(engine, "fighting_styles")
@@ -292,48 +357,17 @@ def main():
 
         # TODO: if there was an error in writing the database, it's better not
         # to remove the items from the Redis queue and investigate
+        model_tables = [d["table"] for d in MAPPINGS_MODEL_TABLES]
+        store_in_db(engine, conn, model_tables, data)
 
-        table_names = ("characters", "voice_actors", "fighting_styles", "categories")
-        for table_name in table_names:
-            table_data = [d["datum"] for d in data if d["table"] == table_name]
-            if table_data:
-                table = get_table(engine, table_name)
-                clause = table.insert()
-                try:
-                    conn.execute(clause, data)
-                except IntegrityError as e:
-                    e.add_detail("Bulk insert failed. Insert one-by-one.")
-                    logger.error(e)
-                    for datum in table_data:
-                        try:
-                            conn.execute(clause, datum)
-                        except IntegrityError as e:
-                            logger.error(e)
-                except OperationalError as e:
-                    e.add_detail("FIXME")
-                    logger.critical(e)
-
-        association_table_names = ("characters_voice_actors", "characters_categories")
-        for table_name in association_table_names:
-            table_data = [d["datum"] for d in data if d["table"] == table_name]
-            if table_data:
-                table = get_table(engine, table_name)
-                clause = table.insert()
-                try:
-                    logger.debug(f"Try Bulk insert of {len(data)} records.")
-                    conn.execute(clause, data)
-                except IntegrityError as e:
-                    e.add_detail("Bulk insert failed. Insert one-by-one.")
-                    logger.error(e)
-                    for datum in table_data:
-                        try:
-                            conn.execute(clause, datum)
-                        except IntegrityError as e:
-                            logger.error(e)
-                except OperationalError as e:
-                    e.add_detail("FIXME")
-                    logger.critical(e)
-
+        # TODO: update when DB has all tables
+        # association_tables = [d["table"] for d in MAPPINGS_ASSOCIATION_TABLES]
+        association_tables = [
+            d["table"]
+            for d in MAPPINGS_ASSOCIATION_TABLES
+            if d["table"] != "family_members" and d["table"] != "allegiances"
+        ]
+        store_in_db(engine, conn, association_tables, data)
         i0 = i0 + args.batch
 
 
