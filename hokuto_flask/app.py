@@ -8,7 +8,7 @@ from .extensions import db, migrate
 
 
 load_dotenv(find_dotenv(".env"))
-ENV = os.environ["ENVIRONMENT"]
+ENV = os.environ.get("ENV")
 
 
 def create_app():
@@ -21,9 +21,11 @@ def create_app():
     elif ENV == "prod":
         app.config.from_object(ConfigProd)
     else:
-        raise KeyError("Set ENVIRONMENT")
+        raise KeyError("Set ENV environment variable")
 
-    # print("app.config\n", app.config)
+    assert ENV == app.config["ENV"]
+    # for k in app.config:
+    #     print(k, app.config[k])
     app.wsgi_app = ProxyFix(app.wsgi_app)
     app.register_blueprint(api)
     app.register_blueprint(page)
