@@ -13,6 +13,15 @@ voice_actor_in_character = ns.model(
     },
 )
 
+fighting_style_in_character = ns.model(
+    "Fighting style used by this character",
+    {
+        "id": fields.String(required=True),
+        "name": fields.String(required=True),
+        "url": fields.String(required=False),
+    },
+)
+
 
 character_api_model = ns.model(
     "Character",
@@ -40,6 +49,7 @@ character_api_model = ns.model(
             description="The first manga chapter where the character appears",
         ),
         "voice_actors": fields.List(fields.Nested(voice_actor_in_character)),
+        "fighting_styles": fields.List(fields.Nested(fighting_style_in_character)),
     },
 )
 

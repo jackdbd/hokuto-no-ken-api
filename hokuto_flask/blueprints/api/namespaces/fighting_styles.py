@@ -5,6 +5,18 @@ from ..models.fighting_style import FightingStyleModel
 ns = Namespace("fighting_styles", description="Fighting styles related operations.")
 
 
+character_in_fighting_style = ns.model(
+    "Character who uses this fighting style",
+    {
+        "id": fields.String(required=True),
+        "name": fields.String(required=True),
+        "name_romaji": fields.String(required=False),
+        "name_kanji": fields.String(required=False),
+        "url": fields.String(required=False),
+    },
+)
+
+
 fighting_style_api_model = ns.model(
     "Fighting Style",
     {
@@ -13,6 +25,7 @@ fighting_style_api_model = ns.model(
         "url": fields.String(
             required=False, description="URL to the fighting style's wiki"
         ),
+        "characters": fields.List(fields.Nested(character_in_fighting_style)),
     },
 )
 
