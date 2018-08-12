@@ -11,6 +11,9 @@ Usage:
     # fetch all items from Redis, 50 at a time (default batch), delete all
     # records from all tables in the database
     $ python process_items.py -d
+
+See Also
+    The table names can be found in the Flask app DB models and relationships.
 """
 import os
 import copy
@@ -333,14 +336,14 @@ def main():
     db_revision = alembic_revision(conn)
     logger.info(f"Database version: {db_revision}")
 
+    model_tables = [d["table"] for d in MAPPINGS_MODEL_TABLES]
+    association_tables = [d["table"] for d in MAPPINGS_ASSOCIATION_TABLES]
     if args.delete:
-        delete_all(engine, "characters_voice_actors")
-        delete_all(engine, "characters_categories")
-        delete_all(engine, "characters_fighting_styles")
-        delete_all(engine, "characters")
-        delete_all(engine, "voice_actors")
-        delete_all(engine, "fighting_styles")
-        delete_all(engine, "categories")
+        # clean association tables first to respect DB contraints
+        for table_name in association_tables:
+            delete_all(engine, table_name)
+        for table_name in model_tables:
+            delete_all(engine, table_name)
 
     if args.limit is None:
         limit = num_items
@@ -354,28 +357,11 @@ def main():
         redis_items = rd.lrange(REDIS_ITEMS_KEY, i0, i1)
         logger.debug(f"{len(redis_items)} items found in Redis.")
         data = extract_data(redis_items)
-
         # TODO: if there was an error in writing the database, it's better not
         # to remove the items from the Redis queue and investigate
-        model_tables = [d["table"] for d in MAPPINGS_MODEL_TABLES]
         store_in_db(engine, conn, model_tables, data)
-
-        # TODO: update when DB has all tables
-        # association_tables = [d["table"] for d in MAPPINGS_ASSOCIATION_TABLES]
-        association_tables = [
-            d["table"]
-            for d in MAPPINGS_ASSOCIATION_TABLES
-            if d["table"] != "family_members" and d["table"] != "allegiances"
-        ]
         store_in_db(engine, conn, association_tables, data)
         i0 = i0 + args.batch
-
-
-# rd.lpop() or rd.blpop()?
-# rd.keys()
-# rd.scan()
-# item = rd.lpop(ITEMS_KEY)
-# rd.blpop(ITEMS_KEY)
 
 
 if __name__ == "__main__":
