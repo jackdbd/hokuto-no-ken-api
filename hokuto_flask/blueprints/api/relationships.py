@@ -77,7 +77,7 @@ character_fighting_style_association = db.Table(
 
 # family members (self-referential relationship)
 # characters - characters (many to many)
-family_members = db.Table(
+family_members_association = db.Table(
     "family_members",
     db.Model.metadata,
     db.Column(
@@ -98,7 +98,7 @@ family_members = db.Table(
 
 # allegiances (self-referential relationship)
 # characters - characters (many to many)
-allegiances = db.Table(
+allegiances_association = db.Table(
     "allegiances",
     db.Model.metadata,
     db.Column(

@@ -31,8 +31,8 @@ category_in_character = ns.model(
     },
 )
 
-family_member_in_character = ns.model(
-    "Family member of this character",
+another_character = ns.model(
+    "Character that has a relationhsip with this character (e.g. family, allegiance)",
     {
         "id": fields.String(required=True),
         "name": fields.String(required=True),
@@ -71,8 +71,8 @@ character_api_model = ns.model(
         "voice_actors": fields.List(fields.Nested(voice_actor_in_character)),
         "fighting_styles": fields.List(fields.Nested(fighting_style_in_character)),
         "categories": fields.List(fields.Nested(category_in_character)),
-        "right_relatives": fields.List(fields.Nested(family_member_in_character)),
-        "left_relatives": fields.List(fields.Nested(family_member_in_character)),
+        "relatives": fields.List(fields.Nested(another_character)),
+        "allies": fields.List(fields.Nested(another_character)),
     },
 )
 
