@@ -4,6 +4,7 @@ from ..relationships import (
     character_voice_actor_association,
     character_category_association,
     character_fighting_style_association,
+    family_membes,
 )
 
 
@@ -48,6 +49,14 @@ class CharacterModel(db.Model):
         "FightingStyleModel",
         secondary=character_fighting_style_association,
         back_populates="characters",
+    )
+    # self-referential relationship
+    right_relatives = db.relationship(
+        "CharacterModel",
+        secondary=family_membes,
+        primaryjoin=id == family_membes.c.relative_left_id,
+        secondaryjoin=id == family_membes.c.relative_right_id,
+        backref="left_relatives",
     )
 
     def __repr__(self):

@@ -74,3 +74,24 @@ character_fighting_style_association = db.Table(
         "character_id", "fighting_style_id", name="character_id_fighting_style_id"
     ),
 )
+
+# family members (self-referential relationship)
+# characters - characters (many to many)
+family_membes = db.Table(
+    "family_members",
+    db.Model.metadata,
+    db.Column(
+        "relative_left_id",
+        db.String(32),
+        db.ForeignKey("characters.id"),
+        nullable=False,
+        primary_key=True,
+    ),
+    db.Column(
+        "relative_right_id",
+        db.String(32),
+        db.ForeignKey("characters.id"),
+        nullable=False,
+        primary_key=True,
+    ),
+)
