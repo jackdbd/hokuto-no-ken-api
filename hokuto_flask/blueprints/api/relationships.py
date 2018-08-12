@@ -43,3 +43,16 @@ character_voice_actor_association = db.Table(
         "character_id", "voice_actor_id", name="character_id_voice_actor_id"
     ),
 )
+
+# characters - categories (many to many)
+character_category_association = db.Table(
+    "characters_categories",
+    db.Model.metadata,
+    db.Column(
+        "character_id", db.String(32), db.ForeignKey("characters.id"), nullable=False
+    ),
+    db.Column(
+        "category_id", db.String(32), db.ForeignKey("categories.id"), nullable=False
+    ),
+    db.UniqueConstraint("character_id", "category_id", name="character_id_category_id"),
+)
