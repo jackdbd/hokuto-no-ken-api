@@ -14,3 +14,4 @@ See Also
 from .characters import ns as characters
 from .voice_actors import ns as voice_actors
 from .fighting_styles import ns as fighting_styles
+from .categories import ns as categories

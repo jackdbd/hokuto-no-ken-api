@@ -50,19 +50,22 @@ ROOT = os.path.abspath(os.path.join(HERE, ".."))
 
 DOTENV_PATH = find_dotenv(".env")
 load_dotenv(DOTENV_PATH)
+ENV = os.environ.get("ENV")
 
-if os.environ["ENVIRONMENT"] == "dev":
+
+if ENV == "dev":
     REDIS_PORT = os.environ["REDIS_PORT"]
     REDIS_HOST = os.environ["REDIS_HOST_DEV"]
-    DB_URI = f"sqlite:///{HERE}/{os.environ['DB_NAME_DEV']}"
+    # DB_URI = f"sqlite:///{HERE}/{os.environ['DB_NAME_DEV']}"
+    DB_URI = os.environ.get("DB_URI_PROD")
     REDIS_ITEMS_KEY = os.environ["REDIS_CHARACTERS_KEY"]
-elif os.environ["ENVIRONMENT"] == "prod":
+elif ENV == "prod":
     REDIS_PORT = os.environ["REDIS_PORT"]
     REDIS_HOST = os.environ["REDIS_HOST_PROD"]
     DB_URI = os.environ["DB_URI_PROD"]
     REDIS_ITEMS_KEY = os.environ["REDIS_CHARACTERS_KEY"]
 else:
-    msg = f"Cannot run in a {os.environ['ENVIRONMENT']} environment"
+    msg = f"Cannot run in a {ENV} environment"
     raise KeyError(msg)
 
 
@@ -268,9 +271,11 @@ def main():
 
     if args.delete:
         delete_all(engine, "characters_voice_actors")
+        delete_all(engine, "characters_categories")
         delete_all(engine, "characters")
         delete_all(engine, "voice_actors")
         delete_all(engine, "fighting_styles")
+        delete_all(engine, "categories")
 
     if args.limit is None:
         limit = num_items
@@ -288,7 +293,7 @@ def main():
         # TODO: if there was an error in writing the database, it's better not
         # to remove the items from the Redis queue and investigate
 
-        table_names = ("characters", "voice_actors", "fighting_styles")
+        table_names = ("characters", "voice_actors", "fighting_styles", "categories")
         for table_name in table_names:
             table_data = [d["datum"] for d in data if d["table"] == table_name]
             if table_data:
@@ -308,7 +313,7 @@ def main():
                     e.add_detail("FIXME")
                     logger.critical(e)
 
-        association_table_names = ("characters_voice_actors",)
+        association_table_names = ("characters_voice_actors", "characters_categories")
         for table_name in association_table_names:
             table_data = [d["datum"] for d in data if d["table"] == table_name]
             if table_data:
