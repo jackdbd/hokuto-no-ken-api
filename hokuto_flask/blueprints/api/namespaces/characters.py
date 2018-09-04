@@ -79,7 +79,6 @@ character_api_model = ns.model(
 
 @ns.route("/")
 class CharacterList(Resource):
-
     @ns.doc("get_character_list")
     @ns.marshal_list_with(character_api_model)
     def get(self):
@@ -91,7 +90,6 @@ class CharacterList(Resource):
 @ns.route("/<string:character_id>")
 @ns.param("character_id", "The character's identifier")
 class Character(Resource):
-
     @ns.doc("get_character", responses={404: "Character not found."})
     @ns.marshal_with(character_api_model)
     def get(self, character_id):
@@ -105,7 +103,6 @@ class Character(Resource):
 
 @ns.route("/random")
 class CharacterRandom(Resource):
-
     @ns.doc("get_character_random")
     @ns.marshal_with(character_api_model)
     def get(self):

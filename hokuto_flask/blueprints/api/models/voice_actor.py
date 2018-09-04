@@ -9,6 +9,7 @@ class VoiceActorModel(db.Model):
     It seems that the voice actor's name is unique on Hokuto Renkitōza. If not,
     this would be problematic (see documentation in models/character).
     """
+
     __tablename__ = "voice_actors"
     id = db.Column(db.String(32), primary_key=True, autoincrement=False)
     name = db.Column(db.String(64), index=True, unique=True, nullable=False)

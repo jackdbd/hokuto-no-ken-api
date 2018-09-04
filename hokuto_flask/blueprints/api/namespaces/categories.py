@@ -28,7 +28,6 @@ category_api_model = ns.model(
 
 @ns.route("/")
 class CategoryList(Resource):
-
     @ns.doc("get_category_list")
     @ns.marshal_list_with(category_api_model)
     def get(self):
@@ -40,7 +39,6 @@ class CategoryList(Resource):
 @ns.route("/<string:category_id>")
 @ns.param("category_id", "The category's identifier")
 class Category(Resource):
-
     @ns.doc("get_category", responses={404: "Category not found."})
     @ns.marshal_with(category_api_model)
     def get(self, category_id):
@@ -54,7 +52,6 @@ class Category(Resource):
 
 @ns.route("/random")
 class CategoryRandom(Resource):
-
     @ns.doc("get_category_random")
     @ns.marshal_with(category_api_model)
     def get(self):

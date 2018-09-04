@@ -6,6 +6,7 @@ from ..relationships import character_category_association
 class CategoryModel(db.Model):
     """Database model for a category in the Hokuto no Ken universe.
     """
+
     __tablename__ = "categories"
     id = db.Column(db.String(32), primary_key=True, autoincrement=False)
     name = db.Column(db.String(64), index=True, unique=True, nullable=False)

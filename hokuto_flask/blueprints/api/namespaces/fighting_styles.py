@@ -32,7 +32,6 @@ fighting_style_api_model = ns.model(
 
 @ns.route("/")
 class FightingStyleList(Resource):
-
     @ns.doc("get_fighting_style_list")
     @ns.marshal_list_with(fighting_style_api_model)
     def get(self):
@@ -44,7 +43,6 @@ class FightingStyleList(Resource):
 @ns.route("/<string:fighting_style_id>")
 @ns.param("fighting_style_id", "The fighting style's identifier")
 class FightingStyle(Resource):
-
     @ns.doc("get_fighting_style", responses={404: "Fighting style not found."})
     @ns.marshal_with(fighting_style_api_model)
     def get(self, fighting_style_id):
@@ -58,7 +56,6 @@ class FightingStyle(Resource):
 
 @ns.route("/random")
 class FightingStyleRandom(Resource):
-
     @ns.doc("get_fighting_style_random")
     @ns.marshal_with(fighting_style_api_model)
     def get(self):

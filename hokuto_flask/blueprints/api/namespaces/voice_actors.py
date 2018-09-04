@@ -30,7 +30,6 @@ voice_actor_api_model = ns.model(
 
 @ns.route("/")
 class VoiceActorList(Resource):
-
     @ns.doc("get_voice_actor_list")
     @ns.marshal_list_with(voice_actor_api_model)
     def get(self):
@@ -42,7 +41,6 @@ class VoiceActorList(Resource):
 @ns.route("/<string:voice_actor_id>")
 @ns.param("voice_actor_id", "The voice actor's identifier")
 class VoiceActor(Resource):
-
     @ns.doc("get_voice_actor", responses={404: "Voice actor not found."})
     @ns.marshal_with(voice_actor_api_model)
     def get(self, voice_actor_id):
@@ -56,7 +54,6 @@ class VoiceActor(Resource):
 
 @ns.route("/random")
 class VoiceActorRandom(Resource):
-
     @ns.doc("get_voice_actor_random")
     @ns.marshal_with(voice_actor_api_model)
     def get(self):

@@ -27,6 +27,7 @@ class CharacterModel(db.Model):
     url can be NULL because a character might be listed in the wiki, but there
     is not (yet) an associated character's page.
     """
+
     __tablename__ = "characters"
     id = db.Column(db.String(32), primary_key=True, autoincrement=False)
     name = db.Column(db.String(32), index=True, unique=True, nullable=False)
