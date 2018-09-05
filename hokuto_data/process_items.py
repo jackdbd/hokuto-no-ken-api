@@ -106,8 +106,7 @@ ENV = os.environ.get("ENV")
 if ENV == "dev":
     REDIS_PORT = os.environ["REDIS_PORT"]
     REDIS_HOST = os.environ["REDIS_HOST_DEV"]
-    # DB_URI = f"sqlite:///{HERE}/{os.environ['DB_NAME_DEV']}"
-    DB_URI = os.environ.get("DB_URI_PROD")
+    DB_URI = f"sqlite:///{ROOT}/{os.environ.get('DB_NAME_DEV')}"
     REDIS_ITEMS_KEY = os.environ["REDIS_CHARACTERS_KEY"]
 elif ENV == "prod":
     REDIS_PORT = os.environ["REDIS_PORT"]

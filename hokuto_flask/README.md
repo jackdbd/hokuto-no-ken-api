@@ -9,7 +9,7 @@ Powered by [Flask-RESTPlus](https://flask-restplus.readthedocs.io/en/stable/).
 
 ## Installation
 
-```
+```sh
 pipenv install
 ```
 
@@ -21,11 +21,27 @@ pipenv run flask run
 ```
 
 
+## Migrations
+
+```sh
+pipenv run flask db init --multidb
+pipenv run flask db migrate
+pipenv run flask db upgrade
+```
+
+
+## Tests
+
+```sh
+pipenv run pytest
+```
+
+
 ## Other
 
 Code formatting with [black](https://github.com/ambv/black).
 
-```
+```sh
 # format all python modules
 pipenv run black .
 ```
