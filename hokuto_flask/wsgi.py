@@ -11,6 +11,6 @@ See Also:
     http://flask.pocoo.org/docs/1.0/patterns/appfactories/
     https://stackoverflow.com/a/25319752/3036129
 """
-from .app import create_app
+from hokuto_flask.app import create_app
 
 application = create_app()

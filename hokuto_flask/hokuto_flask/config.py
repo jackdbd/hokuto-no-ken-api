@@ -3,7 +3,7 @@ from dotenv import find_dotenv, load_dotenv
 
 
 HERE = os.path.abspath(os.path.dirname(__file__))
-ROOT = os.path.abspath(os.path.join(HERE, ".."))
+ROOT = os.path.abspath(os.path.join(HERE, "..", ".."))
 load_dotenv(find_dotenv(".env"))
 
 
