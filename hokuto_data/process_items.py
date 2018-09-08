@@ -164,7 +164,6 @@ def is_valid(item):
 
 
 def assign_ids(item, keys):
-
     def assign_id(d):
         id_ = md5(d["name"].encode("utf-8")).hexdigest()
         d_ = {"id": id_, **d}
@@ -338,7 +337,7 @@ def main():
     model_tables = [d["table"] for d in MAPPINGS_MODEL_TABLES]
     association_tables = [d["table"] for d in MAPPINGS_ASSOCIATION_TABLES]
     if args.delete:
-        # clean association tables first to respect DB contraints
+        # clean association tables first to respect DB constraints
         for table_name in association_tables:
             delete_all(engine, table_name)
         for table_name in model_tables:
