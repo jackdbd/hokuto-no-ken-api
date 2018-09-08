@@ -35,15 +35,15 @@ class FightingStyleModel(db.Model):
     def random(cls):
         return cls.query.order_by(func.random()).first()
 
-    def save_to_db(self):
+    def save(self):
         db.session.add(self)
         db.session.commit()
 
-    def update_in_db(self, **kwargs):
+    def update(self, **kwargs):
         for attr, value in kwargs.items():
             setattr(self, attr, value)
         db.session.commit()
 
-    def delete_from_db(self):
+    def delete(self):
         db.session.delete(self)
         db.session.commit()

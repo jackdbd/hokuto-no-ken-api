@@ -7,8 +7,16 @@ Data from the [Hokuto Renkitōza](http://hokuto.wikia.com/wiki/Main_Page) wiki.
 
 ## Installation
 
+If you wnat just the API:
+
 ```sh
 pipenv install
+```
+
+Otherwise, if you want to be able to test the code, use the code formatter and run gunicorn locally:
+
+```sh
+pipenv install --dev
 ```
 
 
@@ -36,7 +44,24 @@ pipenv run flask db upgrade
 ## Tests
 
 ```sh
-pipenv run pytest
+# Activate your virtual environment (you can use pipenv --venv to know the name
+# of YOUR-VIRTUALENV)
+workon YOUR-VIRTUALENV
+
+# Instead of setting FLASK_ENV=test in the .env file, you can assign
+# the FLASK_ENV environment variable on-the-fly and run the tests.
+# This is handy when running the tests locally.
+env FLASK_ENV='test' pytest -v
+```
+
+
+## Run gunicorn locally
+
+It might be useful to try running the application with gunicorn before deploying it. For this you have to install gunicorn with `sudo apt-get install gunicorn` and use pipenv to launch gunicorn.
+
+```sh
+workon YOUR-VIRTUALENV
+env FLASK_ENV='production' gunicorn wsgi:application --bind 0.0.0.0:8080
 ```
 
 
@@ -47,23 +72,4 @@ Code formatting with [black](https://github.com/ambv/black).
 ```sh
 # format all python modules
 pipenv run black .
-```
-
-## TODO: document how to run tests
-
-```sh
-pipenv run pytest
-```
-
-```sh
-http://flask.pocoo.org/docs/1.0/testing/
-```
-
-
-## Run gunicorn
-
-It might be useful to try running the application with gunicorn before deploying it. For this you have to install gunicorn with `sudo apt-get install gunicorn` and use pipenv to launch gunicorn.
-
-```sh
-pipenv run gunicorn wsgi:application --bind 0.0.0.0:8080
 ```
