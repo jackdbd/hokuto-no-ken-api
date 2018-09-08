@@ -1,8 +1,18 @@
 language: python
 python:
   - "3.6"
+cache:
+  pip: true
 install:
   - pip install pipenv
+  - pip install coverage
+  - pip install codecov
 env:
   - TEST_DIR=hokuto_flask
-script: cd $TEST_DIR && pipenv install --dev && pipenv run pytest -v
+script: cd $TEST_DIR && pipenv install --dev && pipenv run coverage run -m pytest -v
+after_success:
+  - codecov
+notifications:
+    email:
+        on_success: change
+        on_failure: always

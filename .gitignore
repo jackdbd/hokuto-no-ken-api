@@ -1,9 +1,15 @@
+# Editors, IDEs
 .idea/
 .vscode/
-__pycache__/
-/*/.pytest_cache/
 
-*pyc
+# compiled bytecode of Python source files
+__pycache__/
+*.pyc
+
+# tests
+/*/.pytest_cache/
+/*/.coverage
+
 *.db
 *.jsonl
 *.env

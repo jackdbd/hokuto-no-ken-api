@@ -1,6 +1,6 @@
 # Hokuto no Ken API
 
-TODO
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT) [![Build Status](https://travis-ci.org/jackdbd/hokuto-no-ken-api.svg?branch=master)](https://travis-ci.org/jackdbd/hokuto-no-ken-api) [![Python 3](https://pyup.io/repos/github/jackdbd/hokuto-no-ken-api/python-3-shield.svg)](https://pyup.io/repos/github/jackdbd/hokuto-no-ken-api/) [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/ambv/black)
 
 :warning: :construction_worker: WORK IN PROGRESS :building_construction: :construction:
 
