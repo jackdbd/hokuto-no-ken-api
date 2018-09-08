@@ -1,0 +1,8 @@
+language: python
+python:
+  - "3.6"
+install:
+  - pip install pipenv
+env:
+  - TEST_DIR=hokuto_flask
+script: cd $TEST_DIR && pipenv install --dev && pipenv run pytest -v
