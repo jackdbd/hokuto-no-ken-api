@@ -5,9 +5,19 @@ Scrape the [Hokuto Renkitōza](http://hokuto.wikia.com/wiki/Main_Page) wiki and 
 
 ## Installation
 
-```
+If you wnat just the spiders:
+
+```sh
 pipenv install
 ```
+
+Otherwise, if you want to be able to test the code with Betamax and use the code formatter:
+
+```sh
+pipenv install --dev
+```
+
+You will also need a Redis datastore to connect to. I start a redis-server on my machine.
 
 
 ## Usage
@@ -16,13 +26,18 @@ The `characters` spider scrapes all the data from the Hokuto no Ken characters t
 
 A scrapy [Item Pipeline](https://doc.scrapy.org/en/latest/topics/item-pipeline.html) sends this data to Redis (there must be a Redis server running on `localhost:6379`).
 
-```
+```sh
 pipenv run python manage.py -s characters
+
+# OR
+pipenv --venv  # to know the name of YOUR-VIRTUALENV
+workon YOUR-VIRTUALENV
+python manage.py -s characters
 ```
 
 When the script has finished (it should take ~5 minutes), check that the data is stored in Redis. You can use `redis-cli` and run this simple command:
 
-```
+```sh
 llen characters:items
 ```
 
