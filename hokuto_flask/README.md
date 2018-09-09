@@ -7,7 +7,7 @@ Data from the [Hokuto Renkitōza](http://hokuto.wikia.com/wiki/Main_Page) wiki.
 
 ## Installation
 
-If you wnat just the API:
+If you want just the API:
 
 ```sh
 pipenv install
@@ -24,6 +24,11 @@ pipenv install --dev
 
 ```sh
 pipenv run flask run
+
+# OR
+pipenv --venv  # to know the name of YOUR-VIRTUALENV
+workon YOUR-VIRTUALENV
+flask run
 ```
 
 
@@ -36,7 +41,7 @@ pipenv run flask db init
 # Create the migration script (every time there is a change in the schema)
 pipenv run flask db migrate
 
-# Run all migration scripts
+# Run all migration scripts (i.e migrate the database to the latest revision)
 pipenv run flask db upgrade
 ```
 

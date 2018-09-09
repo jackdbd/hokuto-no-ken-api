@@ -98,7 +98,7 @@ def extract_first_appearance(string, type_, last_possible):
         substring = string[i_start:]
         i0 = substring.find("(") + 1
         i1 = substring[i0:].find(")")
-        splits = substring[i0:i0 + i1].split()
+        splits = substring[i0 : i0 + i1].split()
 
         appearances = []
         appearances_single = [int(s) for s in splits if s.isdigit()]
@@ -265,7 +265,9 @@ class Characters(CrawlSpider):
 
             scraped_at = datetime.datetime.now(tz)
             common_data = {
-                "name": name, "scraped_at": str(scraped_at), "categories": categories
+                "name": name,
+                "scraped_at": str(scraped_at),
+                "categories": categories,
             }
             infobox = response.xpath('//table[@class="infobox"]')
             if not infobox:

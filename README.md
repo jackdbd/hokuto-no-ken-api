@@ -5,12 +5,8 @@
 :warning: :construction_worker: WORK IN PROGRESS :building_construction: :construction:
 
 
-## TODO: write brief description and instructions
+## Steps to build this project locally and create the API
 
-Create the database updated to the latest revision. Run this command from the repository root directory (not from the `app` directory)
-
-```shell
-flask db upgrade
-```
-
-Populate the database by scraping the data from [Hokuto Renkitōza](http://hokuto.wikia.com/wiki/Main_Page). The spider will scrape all the Hokuto no Ken characters that have a wiki page, then an [Item Pipeline](https://doc.scrapy.org/en/latest/topics/item-pipeline.html) will populate all the tables.
+1. Install [the scrapy spiders](https://github.com/jackdbd/hokuto-no-ken-api/tree/master/hokuto_scraping).
+2. Install the dependencies for [the script](https://github.com/jackdbd/hokuto-no-ken-api/tree/master/hokuto_data) that populates a SQLite / PostgreSQL database with the data found in Redis.
+3. Install the Flask web application and Flask-RestPlus API. Follow the instructions [here](https://github.com/jackdbd/hokuto-no-ken-api/tree/master/hokuto_flask).

@@ -14,7 +14,6 @@ from scrapy.exceptions import DropItem
 
 
 class DropItemPipeline(object):
-
     def process_item(self, item, spider):
         # TODO: maybe implement some logic to decide whether this item should
         # be sent to the next pipeline or dropped.

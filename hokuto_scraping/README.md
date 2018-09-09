@@ -5,7 +5,7 @@ Scrape the [Hokuto Renkitōza](http://hokuto.wikia.com/wiki/Main_Page) wiki and 
 
 ## Installation
 
-If you wnat just the spiders:
+If you want just the spiders:
 
 ```sh
 pipenv install
