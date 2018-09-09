@@ -10,12 +10,12 @@ flask-migrate = "*"
 "psycopg2" = "*"
 flask-restplus = "*"
 python-dotenv = "*"
+gunicorn = "*"
 
 [dev-packages]
 black = "*"
 pytest = "*"
 mimesis = "*"
-gunicorn = "*"
 
 [requires]
 python_version = "3.6"

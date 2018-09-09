@@ -13,7 +13,7 @@ If you want just the API:
 pipenv install
 ```
 
-Otherwise, if you want to be able to test the code, use the code formatter and run gunicorn locally:
+Otherwise, if you want to be able to test the code and use the code formatter:
 
 ```sh
 pipenv install --dev
