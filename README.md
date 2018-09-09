@@ -22,6 +22,8 @@ This command will:
 
 ## Deploy the API on Heroku
 
+If this is the first time, create a Heroku application with `heroku create`.
+
 ```sh
 make deploy_api
 ```

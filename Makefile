@@ -2,8 +2,11 @@ ROOT_DIR:=$(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 SCRAPING_DIR:=${ROOT_DIR}/hokuto_scraping
 DATA_DIR:=${ROOT_DIR}/hokuto_data
 API_DIR:=${ROOT_DIR}/hokuto_flask
+
+# Read the environment variables defined in the .env file
 API_DOTENV:=${API_DIR}/.env
-VARIABLE=`cat $(API_DOTENV)`
+SECRET_KEY_PROD:=$(shell ack SECRET_KEY_PROD=.*$$ ${API_DIR}/.env | cut -d '=' -f2)
+DB_URI_PROD:=$(shell ack DB_URI_PROD=postgres://.*\.com:[0-9]{4}/.*$$ ${API_DIR}/.env | cut -d '=' -f2)
 
 # https://stackoverflow.com/a/8889085/3036129
 .PHONY: help
@@ -13,11 +16,11 @@ help:
 	@echo '             from Redis and populate the database, and the Flask'
 	@echo '             web application and Flask-RESTPlus API.'
 	@echo 'deploy_api - Deploy the Flask web application and Flask-RESTPlus'
-	@echo '             API on Heroku.'
+	@echo '             API on Heroku and sets all the environment variables '
+	@echo '             required in production.'
 	@echo 'test       - Run all tests.'
-	@echo ${API_DIR}
-	@echo ${API_DOTENV}
-	@echo ${VARIABLE}
+	@echo ''
+	@echo 'Root directory: ${ROOT_DIR}'
 
 # https://stackoverflow.com/a/3574387/3036129
 .PHONY: install
@@ -36,5 +39,6 @@ https://stackoverflow.com/q/39197334/3036129
 .PHONY: deploy_api
 deploy_api:
 	heroku config:set FLASK_ENV=production
-	# TODO: how to get SECRET_KEY_PROD, DB_URI from .env file and set them here?
+	heroku config:set SECRET_KEY_PROD=${SECRET_KEY_PROD}
+	heroku config:set DB_URI_PROD=${DB_URI_PROD}
 	git subtree push --prefix hokuto_flask heroku master
