@@ -5,8 +5,23 @@
 :warning: :construction_worker: WORK IN PROGRESS :building_construction: :construction:
 
 
-## Steps to build this project locally and create the API
+## Installation
 
-1. Install [the scrapy spiders](https://github.com/jackdbd/hokuto-no-ken-api/tree/master/hokuto_scraping).
-2. Install the dependencies for [the script](https://github.com/jackdbd/hokuto-no-ken-api/tree/master/hokuto_data) that populates a SQLite / PostgreSQL database with the data found in Redis.
-3. Install the Flask web application and Flask-RestPlus API. Follow the instructions [here](https://github.com/jackdbd/hokuto-no-ken-api/tree/master/hokuto_flask).
+You can use the `Makefile` included in this repository to install all the components.
+
+```sh
+make install
+```
+
+This command will:
+
+1. create the environment for the [scrapy spiders](https://github.com/jackdbd/hokuto-no-ken-api/tree/master/hokuto_scraping);
+2. create the environment for the [script](https://github.com/jackdbd/hokuto-no-ken-api/tree/master/hokuto_data) that populates the database with data found in Redis;
+3. create the environment for the [Flask web application and Flask-RestPlus API](https://github.com/jackdbd/hokuto-no-ken-api/tree/master/hokuto_flask).
+
+
+## Deploy the API on Heroku
+
+```sh
+make deploy_api
+```
