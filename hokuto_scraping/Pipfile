@@ -72,6 +72,7 @@ scrapy = "*"
 scrapy-redis = "*"
 
 [dev-packages]
+betamax = "*"
 
 [requires]
 python_version = "3.6"
