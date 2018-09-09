@@ -5,12 +5,12 @@ During development, it might be useful to connect to the redis server with the
 redis native client. Launch it with `redis-cli`
 
 Usage:
-    $ python process_items.py
+    $ python process_items.py -e production
     # fetch 300 (limit) items from Redis, 20 (batch) at a time, verbose output
-    $ python process_items.py -l 300 -b 20 -v
+    $ python process_items.py -e staging -l 300 -b 20 -v
     # fetch all items from Redis, 50 at a time (default batch), delete all
     # records from all tables in the database
-    $ python process_items.py -d
+    $ python process_items.py -e development -d
 
 See Also
     The table names can be found in the Flask app DB models and relationships.
@@ -100,27 +100,22 @@ MAPPINGS_ASSOCIATION_TABLES = (
 
 DOTENV_PATH = find_dotenv(".env")
 load_dotenv(DOTENV_PATH)
-ENV = os.environ.get("ENV")
 
-
-if ENV == "dev":
-    REDIS_PORT = os.environ["REDIS_PORT"]
-    REDIS_HOST = os.environ["REDIS_HOST_DEV"]
-    DB_URI = f"sqlite:///{ROOT}/{os.environ.get('DB_NAME_DEV')}"
-    REDIS_ITEMS_KEY = os.environ["REDIS_CHARACTERS_KEY"]
-elif ENV == "prod":
-    REDIS_PORT = os.environ["REDIS_PORT"]
-    REDIS_HOST = os.environ["REDIS_HOST_PROD"]
-    DB_URI = os.environ["DB_URI_PROD"]
-    REDIS_ITEMS_KEY = os.environ["REDIS_CHARACTERS_KEY"]
-else:
-    msg = f"Cannot run in a {ENV} environment"
-    raise KeyError(msg)
+REDIS_PORT = os.environ["REDIS_PORT"]
+REDIS_HOST = os.environ["REDIS_HOST"]
+REDIS_ITEMS_KEY = os.environ["REDIS_CHARACTERS_KEY"]
 
 
 def parse_args():
     parser = argparse.ArgumentParser(
         description=__doc__, formatter_class=RawDescriptionHelpFormatter
+    )
+    parser.add_argument(
+        "-e",
+        "--environment",
+        type=str,
+        choices=("development", "staging", "production"),
+        help="Environment (database which will be populated)",
     )
     parser.add_argument(
         "-l",
@@ -324,6 +319,16 @@ def main():
     assert rd.type(REDIS_ITEMS_KEY) == b"list"
     num_items = rd.llen(REDIS_ITEMS_KEY)
     logger.info(f"{num_items} items in {REDIS_ITEMS_KEY}")
+
+    if args.environment == "development":
+        DB_URI = f"sqlite:///{ROOT}/{os.environ.get('DB_NAME_DEV')}"
+    elif args.environment == "staging":
+        DB_URI = os.environ["DB_URI_STAGING"]
+    elif args.environment == "production":
+        DB_URI = os.environ["DB_URI_PRODUCTION"]
+    else:
+        msg = f"Cannot run in a {args.environment} environment"
+        raise KeyError(msg)
 
     # TODO: what's the best way to handle redis fetching + postgres insertions?
     # fetch from redis, try to store in db, then only remove from redis if

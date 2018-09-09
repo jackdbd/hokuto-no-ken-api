@@ -17,9 +17,12 @@ if FLASK_ENV == "development":
     SQLALCHEMY_ECHO = True
     SQLALCHEMY_TRACK_MODIFICATIONS = True
 elif FLASK_ENV == "staging":
-    # TODO
     DEBUG = False
     TESTING = False
+    SECRET_KEY = os.environ.get("SECRET_KEY_STAG")
+    SQLALCHEMY_DATABASE_URI = os.environ.get("DB_URI_STAG")
+    SQLALCHEMY_ECHO = False
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
 elif FLASK_ENV == "production":
     DEBUG = False
     TESTING = False
