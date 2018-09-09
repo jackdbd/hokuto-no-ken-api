@@ -22,7 +22,11 @@ This command will:
 
 ## Deploy the API on Heroku
 
+To deploy the application on Heroku you need to install the [Heroku CLI](https://devcenter.heroku.com/articles/heroku-cli#download-and-install).
+
 If this is the first time, create a Heroku application with `heroku create`.
+
+Deploy the API (the first time or every time you make a change):
 
 ```sh
 make deploy_api
