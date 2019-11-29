@@ -1,21 +1,35 @@
 [[source]]
+name = "pypi"
 url = "https://pypi.org/simple"
 verify_ssl = true
-name = "pypi"
 
 [packages]
 flask = "*"
-flask-sqlalchemy = "*"
 flask-migrate = "*"
-"psycopg2" = "*"
 flask-restplus = "*"
+flask-sqlalchemy = "*"
+psycopg2-binary = "*"
 python-dotenv = "*"
-gunicorn = "*"
 
 [dev-packages]
 black = "*"
-pytest = "*"
+gunicorn = "*"
 mimesis = "*"
+pytest = "*"
+zappa = "*"
 
 [requires]
-python_version = "3.6"
+python_version = "3.7"
+
+[scripts]
+db-upgrade-local = "pipenv run flask db upgrade"
+deploy-dev = "pipenv run zappa deploy dev"
+dev = "pipenv run flask run"
+dev-gunicorn = "pipenv run gunicorn --bind 0.0.0.0:8080 --workers 4 --reload wsgi:application"
+lint = "pipenv run black . --target-version py37"
+logs-dev = "pipenv run zappa tail dev --since 2h"
+routes = "pipenv run flask routes"
+status-dev = "pipenv run zappa status dev"
+test = "pipenv run env FLASK_ENV='test' pytest --verbose"
+undeploy-dev = "pipenv run zappa undeploy dev"
+update-dev = "pipenv run zappa update dev"

@@ -1,0 +1,17 @@
+# Environment variables
+.env
+.env.production
+
+# Log files
+*.log
+
+# Compiled bytecode of Python source files
+*.pyc
+__pycache__/
+
+# Tests
+.coverage
+.pytest_cache/
+
+# App packaged by Zappa and ready to be deployed on AWS
+*.zip

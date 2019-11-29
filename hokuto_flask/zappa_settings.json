@@ -1,0 +1,22 @@
+{
+    "dev": {
+        "apigateway_description": "Hokuto no Ken API. A REST API built with Flask.",
+        "aws_environment_variables" : {
+            "ENV_FILENAME": ".env.production"
+        },
+        "app_function": "wsgi.application",
+        "aws_region": "eu-central-1",
+        "cloudwatch_metrics_enabled": true,
+        "cors": true,
+        "debug": true,
+        "exclude": ["*.env"],
+        "keep_warm": false,
+        "lambda_description": "This lambda is the WSGI app entry point",
+        "memory_size": 128,
+        "profile_name": "zappa",
+        "project_name": "hokuto-flask",
+        "runtime": "python3.7",
+        "s3_bucket": "zappa-sy1v5zm6y",
+        "xray_tracing": true
+    }
+}

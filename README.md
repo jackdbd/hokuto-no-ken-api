@@ -1,33 +1,5 @@
 # Hokuto no Ken API
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT) [![Build Status](https://travis-ci.org/jackdbd/hokuto-no-ken-api.svg?branch=master)](https://travis-ci.org/jackdbd/hokuto-no-ken-api) [![Code Coverage](https://codecov.io/gh/jackdbd/hokuto-no-ken-api/coverage.svg)](https://codecov.io/gh/jackdbd/hokuto-no-ken-api) [![Python 3](https://pyup.io/repos/github/jackdbd/hokuto-no-ken-api/python-3-shield.svg)](https://pyup.io/repos/github/jackdbd/hokuto-no-ken-api/) [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/ambv/black) 
+[![Build Status](https://travis-ci.org/jackdbd/hokuto-no-ken-api.svg?branch=master)](https://travis-ci.org/jackdbd/hokuto-no-ken-api) [![Code Coverage](https://codecov.io/gh/jackdbd/hokuto-no-ken-api/coverage.svg)](https://codecov.io/gh/jackdbd/hokuto-no-ken-api) [![DeepScan grade](https://deepscan.io/api/teams/3517/projects/8277/branches/95709/badge/grade.svg)](https://deepscan.io/dashboard#view=project&tid=3517&pid=8277&bid=95709) [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/ambv/black)
 
 :warning: :construction_worker: WORK IN PROGRESS :building_construction: :construction:
-
-
-## Installation
-
-You can use the `Makefile` included in this repository to install all the components.
-
-```sh
-make install
-```
-
-This command will:
-
-1. create the environment for the [scrapy spiders](https://github.com/jackdbd/hokuto-no-ken-api/tree/master/hokuto_scraping);
-2. create the environment for the [script](https://github.com/jackdbd/hokuto-no-ken-api/tree/master/hokuto_data) that populates the database with data found in Redis;
-3. create the environment for the [Flask web application and Flask-RestPlus API](https://github.com/jackdbd/hokuto-no-ken-api/tree/master/hokuto_flask).
-
-
-## Deploy the API on Heroku
-
-To deploy the application on Heroku you need to install the [Heroku CLI](https://devcenter.heroku.com/articles/heroku-cli#download-and-install).
-
-If this is the first time, create a Heroku application with `heroku create`.
-
-Deploy the API (the first time or every time you make a change):
-
-```sh
-make deploy_api
-```
