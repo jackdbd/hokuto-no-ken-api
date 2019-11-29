@@ -1,80 +1,110 @@
 # Hokuto Flask
 
-Hokuto no Ken [REST API](https://floating-headland-89373.herokuapp.com/api/v1/), powered by [Flask-RESTPlus](https://flask-restplus.readthedocs.io/en/stable/).
+Hokuto no Ken [REST API](https://llpb3kmgw7.execute-api.eu-central-1.amazonaws.com/dev/api/v1/), powered by [Flask-RESTPlus](https://flask-restplus.readthedocs.io/en/stable/).
 
 Data from the [Hokuto Renkitōza](http://hokuto.wikia.com/wiki/Main_Page) wiki.
 
+## Table of Contents
 
-## Installation
+1. [Setup Python Virtual Environment](#setup-python-virtual-environment)
+2. [Project Tasks](#project-tasks)
+3. [Local Development](#local-development)
+4. [Tests](#tests)
+5. [AWS Configuration](#aws-configuration)
+6. [Troubleshooting](#troubleshooting)
 
-If you want just the API:
+<div id='setup-python-virtual-environment'/>
+
+## Setup Python Virtual Environment
+
+This project uses [Python 3.7.2](https://www.python.org/downloads/release/python-372/). If you don't already have it, you can download Python 3.7.2 and install it with [pyenv](https://github.com/pyenv/pyenv).
 
 ```sh
-pipenv install
+pyenv install 3.7.2
 ```
 
-Otherwise, if you want to be able to test the code and use the code formatter:
+Whenever you enter this project directory, pyenv selects the python version specified in the `.python-version` file (i.e. Python 3.7.2)
+
+pyenv allows you to have multiple Python versions on your machine, but it does not prevent you from sharing the same environment across multiple projects. Since it's good practice to have an isolated environment for each project, you can use [pipenv](https://pipenv.readthedocs.io/en/latest/) to create a Python virtual environment for this project.
+
+```sh
+pipenv install --python=`pyenv which python`
+```
+
+Activate the virtual environment with:
+
+```sh
+pipenv shell
+```
+
+and install all project dependecies:
 
 ```sh
 pipenv install --dev
 ```
 
+<div id='project-tasks'/>
 
-## Usage
+## Project Tasks
+
+Pipenv is also really convenient as a CLI tool, and you can use it to perform several tasks while developing, testing, deploying this app.
+
+The list of tasks for this project can be found in the `[scripts]` section of the `Pipfile`.
+
+The first task to run is create a local [SQLite](https://sqlite.org/index.html) database and run all migrations.
+
+This project uses [Flask-SQLAlchemy](https://flask-sqlalchemy.palletsprojects.com/en/2.x/) and [Flask-Migrate](https://flask-migrate.readthedocs.io/en/latest/#) for database management and schema migrations.
+
+Run all migrations with:
 
 ```sh
-pipenv run flask run
-
-# OR
-pipenv --venv  # to know the name of YOUR-VIRTUALENV
-workon YOUR-VIRTUALENV
-flask run
+pipenv run db-upgrade-local
 ```
 
+<div id='local-development'/>
 
-## Migrations
+## Local Development
+
+This project uses a [Flask development server](https://flask.palletsprojects.com/en/1.1.x/server/) when running on your machine. Launch the development server with:
 
 ```sh
-# Init the migrations repository (only once)
-pipenv run flask db init
-
-# Create the migration script (every time there is a change in the schema)
-pipenv run flask db migrate
-
-# Run all migration scripts (i.e migrate the database to the latest revision)
-pipenv run flask db upgrade
+pipenv run dev
 ```
 
+In alternative you could replace the Flask development server with gunicorn (+ speed, - debug info):
+
+```sh
+pipenv run dev-gunicorn
+```
+
+<div id='tests'/>
 
 ## Tests
 
-```sh
-# Activate your virtual environment (you can use pipenv --venv to know the name
-# of YOUR-VIRTUALENV)
-workon YOUR-VIRTUALENV
+This project uses [pytest](https://docs.pytest.org/en/latest/) for unit tests. A few of these tests generate mock data with [Mimesis](https://lk-geimfari.github.io/mimesis/) and perform some operations on an [in-memory SQLite database](https://sqlite.org/inmemorydb.html).
 
-# Instead of setting FLASK_ENV=test in the .env file, you can assign
-# the FLASK_ENV environment variable on-the-fly and run the tests.
-# This is handy when running the tests locally.
-env FLASK_ENV='test' pytest -v
-```
-
-
-## Run gunicorn locally
-
-It might be useful to try running the application with gunicorn before deploying it. For this you have to install gunicorn with `sudo apt-get install gunicorn` and use pipenv to launch gunicorn.
+Run all tests with:
 
 ```sh
-workon YOUR-VIRTUALENV
-env FLASK_ENV='production' gunicorn wsgi:application --bind 0.0.0.0:8080
+pipenv run test
 ```
 
+<div id='aws-configuration'/>
 
-## Other
+## AWS Configuration
 
-Code formatting with [black](https://github.com/ambv/black).
+This project is deployed on AWS through [Zappa](https://www.zappa.io/). Apart from installing zappa as dev dependency, you will need to configure an [AWS named profile](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-profiles.html) and call it `zappa` (if you prefer to pick a different name, don't forget to update `profile_name` in `zappa_settings.json`).
 
-```sh
-# format all python modules
-pipenv run black .
-```
+Follow the guide [Creating IAM Users (Console)](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_users_create.html#id_users_create_console) to setup a new AWS IAM user with **programmatic access**.
+
+<div id='troubleshooting'/>
+
+## Troubleshooting
+
+### psycopg2 on AWS Lambda
+
+In production, the data served by the API is stored in a PostgreSQL database.
+
+Usually SQLAlchemy would be able to connect to a PostgreSQL database with the [psycopg2 adapter](https://docs.sqlalchemy.org/en/13/dialects/postgresql.html#module-sqlalchemy.dialects.postgresql.psycopg2). However this would not work here, because the [AMI (Amazon Machine Image)](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/AMIs.html) where the lambda gets executed lacks the PostgreSQL libraries required for psycopg2 to work. More precisely, psycopg2 is basically a wrapper around the C library libpq, which in general is dynamically linked when compiled. On AWS Lambda psycopg2 doesn't work if libpq was dynamically linked, and it requires that libpq was statically linked.
+
+The solution is to either download both the PostgreSQL source code and psycopg2, compile them (statically linking libpq), and including this custom compiled psycopg2 in the lambda package uploaded by Zappa (see [here](https://evol-monkey.blogspot.com/2019/06/accessing-postgresql-data-from-aws.html) if you want to follow this route) or to just install [psycopg2-binary](https://github.com/psycopg/psycopg2#installation), which does not require a compiler nor external libraries.
