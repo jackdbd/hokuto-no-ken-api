@@ -19,6 +19,3 @@ api.namespaces.pop()
 api.add_namespace(ns=characters, path="/characters")
 api.add_namespace(ns=voice_actors, path="/voice_actors")
 api.add_namespace(ns=fighting_styles, path="/fighting_styles")
-
-# How to export as Postman collection? It says it needs an application context.
-# api.as_postman()

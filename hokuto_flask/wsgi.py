@@ -14,6 +14,10 @@ See Also:
     https://stackoverflow.com/a/25319752/3036129
     https://github.com/Miserlou/Zappa#running-the-initial-setup--settings
 """
-from hokuto_flask.app import create_app
+import os
+from hokuto_flask.app import create_app, export_api_as_postman_collection
 
 application = create_app()
+
+if os.environ.get("FLASK_ENV", None) == "development":
+    export_api_as_postman_collection(application)

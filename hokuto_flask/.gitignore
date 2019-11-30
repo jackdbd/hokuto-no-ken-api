@@ -15,3 +15,6 @@ __pycache__/
 
 # App packaged by Zappa and ready to be deployed on AWS
 *.zip
+
+# Postman collections generated on my machine every time the Flask dev server runs
+postman_*

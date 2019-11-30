@@ -1,10 +1,10 @@
 import os
-from flask import Flask
+from flask import Flask, json
 import logging
 
 # from werkzeug.contrib.fixers import ProxyFix
 from dotenv import find_dotenv, load_dotenv
-from .blueprints import api, page
+from .blueprints import api, flaskRestPlusApi, page
 from .extensions import db, migrate
 
 
@@ -43,3 +43,25 @@ def extensions(app):
     db.init_app(app)
     migrate.init_app(app, db)
     return None
+
+
+def export_api_as_postman_collection(app):
+    """Generate a Postman collection from the Flask-RESTPlus Api instance."""
+    # The Flask-RESTPlus Api's as_postman method requires SERVER_NAME to be set.
+    # app.config["SERVER_NAME"] = "[HOST]:[PORT]"
+    # Since the Postman collection generation is done on my machine (at least
+    # for the time being), I pick localhost and the default port where the Flask
+    # development server is running.
+    app.config["SERVER_NAME"] = "127.0.0.1:5000"
+    with app.app_context():
+        urlvars = False  # Build query strings in URLs
+        swagger = True  # Export Swagger specifications
+        data = flaskRestPlusApi.as_postman(urlvars=urlvars, swagger=swagger)
+        filename = f'postman_collection (generated on {data["timestamp"]}).json'
+        with open(filename, "w") as f:
+            f.write(json.dumps(data))
+    
+    # Flask blueprints with a subdomain set (as the FlaskRestPlus API blueprint
+    # object in this Flask application) actually work if SERVER_NAME is NOT set.
+    # https://github.com/pallets/flask/issues/998#issuecomment-45586187
+    app.config["SERVER_NAME"] = None
