@@ -1,0 +1,19 @@
+{
+  "name": "hokuto_api_reporting",
+  "version": "1.0.0",
+  "description": "Hokuto no Ken API collection runner and reporting",
+  "main": "index.js",
+  "repository": "https://github.com/jackdbd/hokuto-no-ken-api",
+  "author": "Giacomo Debidda",
+  "license": "MIT",
+  "scripts": {
+    "report": "yarn report:build && yarn report:deploy",
+    "report:build": "newman run --reporters cli,htmlextra -n 3 --reporter-htmlextra-template ./templates/api-report.hbs --reporter-htmlextra-export ./reports/index.html postman-collection-v2.json -e ./postman-environment-aws-dev.json",
+    "report:deploy": "surge ./reports/ hokuto-no-ken-api-report.surge.sh"
+  },
+  "devDependencies": {
+    "newman": "^4.5.6",
+    "newman-reporter-htmlextra": "^1.9.2",
+    "surge": "^0.21.3"
+  }
+}
