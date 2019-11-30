@@ -14,4 +14,4 @@ Then build the html report and deploy it with:
 yarn report
 ```
 
-Here is the latest [html report](hokuto-no-ken-api-report.surge.sh) deployed on [surge](https://surge.sh/).
+Here is the latest [html report](https://hokuto-no-ken-api-report.surge.sh/) deployed on [surge](https://surge.sh/).
