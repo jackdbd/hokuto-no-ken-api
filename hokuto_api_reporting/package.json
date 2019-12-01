@@ -8,7 +8,7 @@
   "license": "MIT",
   "scripts": {
     "report": "yarn report:build && yarn report:deploy",
-    "report:build": "newman run --reporters cli,htmlextra -n 3 --reporter-htmlextra-template ./templates/api-report.hbs --reporter-htmlextra-export ./reports/index.html postman-collection-v2.json -e ./postman-environment-aws-dev.json",
+    "report:build": "newman run --verbose --reporters cli,htmlextra -n 3 --reporter-htmlextra-template ./templates/api-report.hbs --reporter-htmlextra-export ./reports/index.html postman-collection-v2.json -e ./postman-environment-aws-dev.json",
     "report:deploy": "surge ./reports/ hokuto-no-ken-api-report.surge.sh"
   },
   "devDependencies": {
