@@ -12,11 +12,16 @@
         "exclude": ["*.env"],
         "keep_warm": false,
         "lambda_description": "This lambda is the WSGI app entry point",
-        "memory_size": 128,
+        "memory_size": 512,
         "profile_name": "zappa",
         "project_name": "hokuto-flask",
         "runtime": "python3.7",
         "s3_bucket": "zappa-sy1v5zm6y",
+        "timeout_seconds": 30,
+        "vpc_config": {
+            "SecurityGroupIds": ["sg-0b80e1ef8a6503a98"],
+            "SubnetIds": ["subnet-946a55ff", "subnet-9af892e7", "subnet-0273094f"]
+        },
         "xray_tracing": true
     }
 }
