@@ -11,7 +11,6 @@ Data from the [Hokuto Renkitōza](http://hokuto.wikia.com/wiki/Main_Page) wiki.
 3. [Local Development](#local-development)
 4. [Tests](#tests)
 5. [AWS Configuration](#aws-configuration)
-6. [Troubleshooting](#troubleshooting)
 
 <div id='setup-python-virtual-environment'/>
 
@@ -96,15 +95,3 @@ pipenv run test
 This project is deployed on AWS through [Zappa](https://www.zappa.io/). Apart from installing zappa as dev dependency, you will need to configure an [AWS named profile](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-profiles.html) and call it `zappa` (if you prefer to pick a different name, don't forget to update `profile_name` in `zappa_settings.json`).
 
 Follow the guide [Creating IAM Users (Console)](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_users_create.html#id_users_create_console) to setup a new AWS IAM user with **programmatic access**.
-
-<div id='troubleshooting'/>
-
-## Troubleshooting
-
-### psycopg2 on AWS Lambda
-
-In production, the data served by the API is stored in a PostgreSQL database.
-
-Usually SQLAlchemy would be able to connect to a PostgreSQL database with the [psycopg2 adapter](https://docs.sqlalchemy.org/en/13/dialects/postgresql.html#module-sqlalchemy.dialects.postgresql.psycopg2). However this would not work here, because the [AMI (Amazon Machine Image)](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/AMIs.html) where the lambda gets executed lacks the PostgreSQL libraries required for psycopg2 to work. More precisely, psycopg2 is basically a wrapper around the C library libpq, which in general is dynamically linked when compiled. On AWS Lambda psycopg2 doesn't work if libpq was dynamically linked, and it requires that libpq was statically linked.
-
-The solution is to either download both the PostgreSQL source code and psycopg2, compile them (statically linking libpq), and including this custom compiled psycopg2 in the lambda package uploaded by Zappa (see [here](https://evol-monkey.blogspot.com/2019/06/accessing-postgresql-data-from-aws.html) if you want to follow this route) or to just install [psycopg2-binary](https://github.com/psycopg/psycopg2#installation), which does not require a compiler nor external libraries.
