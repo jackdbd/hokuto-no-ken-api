@@ -15,34 +15,34 @@ Usage:
 See Also
     The table names can be found in the Flask app DB models and relationships.
 """
+import datetime
 import os
 import copy
 import json
 import redis
 import logging
 import argparse
-import sqlalchemy as sa
+import sqlite3
 from redis.exceptions import ConnectionError
 from hashlib import md5
 from argparse import RawDescriptionHelpFormatter
 from dotenv import find_dotenv, load_dotenv
-from sqlalchemy.exc import OperationalError, IntegrityError
-from db_utils import alembic_revision, delete_all, get_table
+from db_utils import delete_all
 
 
-# TODO: add flag to cleanup the redis queue
-# TODO: add flag to drop all data from the db tables (or maybe drop all the
-# database and re-run migrations)
+tz = datetime.datetime.utcnow().astimezone().tzinfo
+now = datetime.datetime.now(tz)
+started_at = f"{now.year}-{now.month}-{now.day}_{now.hour}-{now.minute}-{now.second}"
 
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("process_items")
 logger.setLevel(logging.DEBUG)
 formatter_str = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 formatter = logging.Formatter(formatter_str)
 
 ch = logging.StreamHandler()
 
-fh = logging.FileHandler("process_items.log")
+fh = logging.FileHandler(f"{started_at}_process_items.log")
 fh.setLevel(logging.DEBUG)
 fh.setFormatter(formatter)
 logger.addHandler(fh)
@@ -219,7 +219,7 @@ def extract_data(redis_items):
     Parameters
     ----------
     redis_items : list
-        scraped items from the Redis queu. Each item was serialized by the
+        scraped items from the Redis queue. Each item was serialized by the
         scrapy_redis RedisPipeline.
 
     Returns
@@ -274,30 +274,21 @@ def extract_data(redis_items):
     return data
 
 
-def store_in_db(engine, conn, table_names, data):
+def store_in_db(cursor, table_names, data):
     for table_name in table_names:
         table_data = [d["datum"] for d in data if d["table"] == table_name]
-        if table_data:
-            table = get_table(engine, table_name)
-            clause = table.insert()
+        logger.info(f"Try inserting {len(table_data)} records in table {table_name}")
+        for datum in table_data:
+            tup = tuple(datum.values())
+            params = ", ".join(["trim(?)" for _ in range(len(datum))])
+            query = f"INSERT INTO {table_name} VALUES ({params});"
             try:
-                conn.execute(clause, data)
-            except IntegrityError as e:
-                e.add_detail("Bulk insert failed. Insert one-by-one.")
+                cursor.execute(query, tup)
+            except sqlite3.IntegrityError as e:
                 logger.error(e)
-                for datum in table_data:
-                    try:
-                        conn.execute(clause, datum)
-                    except IntegrityError as e:
-                        logger.error(e)
-            except OperationalError as e:
-                e.add_detail("FIXME")
-                logger.critical(e)
 
 
 def main():
-    # TODO: secure Redis https://redislabs.com/lp/python-redis/
-    # TODO: can I obfuscate redis commands with redis-py?
     args = parse_args()
     if args.verbose:
         ch.setLevel(logging.DEBUG)
@@ -321,7 +312,7 @@ def main():
     logger.info(f"{num_items} items in {REDIS_ITEMS_KEY}")
 
     if args.environment == "development":
-        DB_URI = f"sqlite:///{ROOT}/{os.environ.get('DB_NAME_DEV')}"
+        DB_URI = os.path.join(ROOT, os.environ["DB_NAME_DEV"])
     elif args.environment == "staging":
         DB_URI = os.environ["DB_URI_STAGING"]
     elif args.environment == "production":
@@ -334,37 +325,33 @@ def main():
     # fetch from redis, try to store in db, then only remove from redis if
     # database write was successful?
 
-    engine = sa.create_engine(DB_URI)
-    conn = engine.connect()
-    db_revision = alembic_revision(conn)
-    logger.info(f"Database version: {db_revision}")
-
     model_tables = [d["table"] for d in MAPPINGS_MODEL_TABLES]
     association_tables = [d["table"] for d in MAPPINGS_ASSOCIATION_TABLES]
-    if args.delete:
-        # clean association tables first to respect DB constraints
-        for table_name in association_tables:
-            delete_all(engine, table_name)
-        for table_name in model_tables:
-            delete_all(engine, table_name)
 
-    if args.limit is None:
-        limit = num_items
-    else:
-        limit = int(args.limit)
+    with sqlite3.connect(DB_URI) as conn:
+        c = conn.cursor()
+        if args.delete:
+            # clean association tables first to respect DB constraints
+            for table_name in association_tables:
+                delete_all(c, table_name)
+            for table_name in model_tables:
+                delete_all(c, table_name)
 
-    i0 = 0
-    while i0 <= limit:
-        i1 = min(limit - 1, i0 + args.batch - 1)
-        logger.info(f"Processing items [{i0} - {i1}]")
-        redis_items = rd.lrange(REDIS_ITEMS_KEY, i0, i1)
-        logger.debug(f"{len(redis_items)} items found in Redis.")
-        data = extract_data(redis_items)
-        # TODO: if there was an error in writing the database, it's better not
-        # to remove the items from the Redis queue and investigate
-        store_in_db(engine, conn, model_tables, data)
-        store_in_db(engine, conn, association_tables, data)
-        i0 = i0 + args.batch
+        if args.limit is None:
+            limit = num_items
+        else:
+            limit = int(args.limit)
+
+        i0 = 0
+        while i0 <= limit:
+            i1 = min(limit - 1, i0 + args.batch - 1)
+            logger.info(f"Processing items [{i0} - {i1}]")
+            redis_items = rd.lrange(REDIS_ITEMS_KEY, i0, i1)
+            logger.debug(f"{len(redis_items)} items found in Redis.")
+            data = extract_data(redis_items)
+            store_in_db(c, model_tables, data)
+            store_in_db(c, association_tables, data)
+            i0 = i0 + args.batch
 
 
 if __name__ == "__main__":
