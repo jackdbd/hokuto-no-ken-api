@@ -23,3 +23,21 @@ class TestCharacters(BetamaxTestCase):
 
         with self.assertRaises(StopIteration):
             next(result)
+
+    def test_parse_page_toki(self):
+        url = "https://hokuto.fandom.com/wiki/Toki"
+        response = self.session.get(url)
+        scrapy_response = HtmlResponse(body=response.content, url=url)
+
+        spider = Characters()
+        result = spider.parse_page(scrapy_response)
+        d = next(result)
+        data = d["scraped_data"]
+
+        self.assertEqual(data["name"], "Toki")
+        self.assertEqual(len(data["allegiances"]), 1)
+        self.assertEqual(data["first_appearance"], {"manga": 45, "anime": 33})
+
+        with self.assertRaises(StopIteration):
+            next(result)
+
