@@ -6,7 +6,12 @@ See Also:
     https://doc.scrapy.org/en/latest/topics/downloader-middleware.html
     https://doc.scrapy.org/en/latest/topics/spider-middleware.html
 """
+import datetime
 import os
+
+tz = datetime.datetime.utcnow().astimezone().tzinfo
+now = datetime.datetime.now(tz)
+started_at = f"{now.year}-{now.month}-{now.day}_{now.hour}-{now.minute}-{now.second}"
 
 HERE = os.path.abspath(os.path.dirname(__file__))
 ROOT = os.path.abspath(os.path.join(HERE, "..", ".."))
@@ -46,7 +51,7 @@ COOKIES_ENABLED = True
 COOKIES_DEBUG = True
 
 # https://doc.scrapy.org/en/latest/topics/telnetconsole.html#topics-telnetconsole
-TELNETCONSOLE_ENABLED = True
+TELNETCONSOLE_ENABLED = False
 
 # https://doc.scrapy.org/en/latest/topics/settings.html#default-request-headers
 # DEFAULT_REQUEST_HEADERS = {
@@ -64,47 +69,44 @@ TELNETCONSOLE_ENABLED = True
 #    f"{BOT_NAME}.middlewares.HokutoDownloaderMiddleware": 543,
 # }
 
-# https://doc.scrapy.org/en/latest/topics/extensions.html
-# EXTENSIONS = {
-#    'scrapy.extensions.telnet.TelnetConsole': None,
-# }
+# I don't need the TelnetConsole, so I disable it.
+# https://docs.scrapy.org/en/latest/topics/extensions.html#disabling-an-extension
+# Keep in mind that quite a few Scrapy extensions are enabled by default.
+# https://doc.scrapy.org/en/latest/topics/settings.html#extensions-base
+EXTENSIONS = {
+   'scrapy.extensions.telnet.TelnetConsole': None,
+}
 
-# Feed Exports
-# FEED_URI = f"file:///{ROOT}/export.jsonl"
-# FEED_URI = "stdout:"
-# FEED_FORMAT = "jsonlines"
+# I don't configure Feed Exports because I store the scraped data in Redis with
+# scrapy_redis.pipelines.RedisPipeline and optionally in a JSON Lines via the -o
+# flag passed to the scrapy crawl CLI.
+# https://docs.scrapy.org/en/latest/topics/feed-exports.html
+# https://docs.scrapy.org/en/latest/topics/commands.html#std:command-crawl
 
 # I think it's better to define ITEM_PIPELINES in a spider's custom_settings
 # instead of defining them globally here. Different spiders might need to send
 # the scraped items to different pipelines.
-# See https://doc.scrapy.org/en/latest/topics/item-pipeline.html
-# ITEM_PIPELINES = {f"{BOT_NAME}.pipelines.DropItemPipeline": 100}
+# https://doc.scrapy.org/en/latest/topics/item-pipeline.html
+# ITEM_PIPELINES = {}
 
-# AutoThrottle extension (disabled by default)
-# See https://doc.scrapy.org/en/latest/topics/autothrottle.html
-# AUTOTHROTTLE_ENABLED = True
-# The initial download delay
-# AUTOTHROTTLE_START_DELAY = 5
-# The maximum download delay to be set in case of high latencies
-# AUTOTHROTTLE_MAX_DELAY = 60
-# The average number of requests Scrapy should be sending in parallel to
-# each remote server
-# AUTOTHROTTLE_TARGET_CONCURRENCY = 1.0
-# Enable showing throttling stats for every response received:
-# AUTOTHROTTLE_DEBUG = False
+# AutoThrottle might be quite useful to crawl some websites. I don't think I
+# really need it for this project though, so I leave it disabled.
+# https://doc.scrapy.org/en/latest/topics/autothrottle.html
+AUTOTHROTTLE_ENABLED = False
 
-# Configure HTTP caching (disabled by default)
-# See https://doc.scrapy.org/en/latest/topics/downloader-middleware.html#httpcache-middleware-settings
-# HTTPCACHE_ENABLED = True
-# HTTPCACHE_EXPIRATION_SECS = 0
-# HTTPCACHE_DIR = 'httpcache'
-# HTTPCACHE_IGNORE_HTTP_CODES = []
-# HTTPCACHE_STORAGE = 'scrapy.extensions.httpcache.FilesystemCacheStorage'
+# HTTP caching would probably make the spiders harder to debug. Since there are
+# no performance requirements for this project, I simply don't use it.
+# https://doc.scrapy.org/en/latest/topics/downloader-middleware.html#httpcache-middleware-settings
+HTTPCACHE_ENABLED = False
 
-# DUPEFILTER_CLASS = "scrapy_redis.dupefilter.RFPDupeFilter"
-# DUPEFILTER_DEBUG = True
+# I think it's useful to see which requests are duplicated, so I log them.
+# https://docs.scrapy.org/en/latest/topics/settings.html#dupefilter-class
+DUPEFILTER_CLASS = "scrapy_redis.dupefilter.RFPDupeFilter"
+DUPEFILTER_DEBUG = True
+
+# https://docs.scrapy.org/en/latest/topics/settings.html#scheduler
 # SCHEDULER = "scrapy_redis.scheduler.Scheduler"
-# SCHEDULER_PERSIST = True
 
 # https://doc.scrapy.org/en/latest/topics/settings.html#log-level
 LOG_LEVEL = "DEBUG"
+LOG_FILE = f"{started_at}_{BOT_NAME}.log"
