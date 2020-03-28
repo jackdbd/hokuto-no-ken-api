@@ -1,6 +1,6 @@
 # Hokuto Scraping
 
-Scrape the [Hokuto Renkitōza](http://hokuto.wikia.com/wiki/Main_Page) wiki and collect all data in a Redis datastore.
+Scrape the [Hokuto Renkitōza](https://hokuto.fandom.com/wiki/Main_Page) wiki and collect all data in a Redis datastore.
 
 ## Installation
 
@@ -14,6 +14,14 @@ Otherwise, if you want to be able to test the code with [Betamax](https://github
 
 ```sh
 pipenv install --dev
+```
+
+If your editor of choice is VS code, set the python path in `.vscode/settings.json`:
+
+```json
+{
+    "python.pythonPath": "<COPY THE OUTPUT OF pipenv --venv HERE>/bin/python"
+}
 ```
 
 You will also need a Redis datastore to connect to. I start a [redis-server](https://redis.io/topics/quickstart) on my machine.

@@ -2,7 +2,7 @@
 
 Hokuto no Ken [REST API](https://llpb3kmgw7.execute-api.eu-central-1.amazonaws.com/dev/api/v1/), powered by [Flask-RESTPlus](https://flask-restplus.readthedocs.io/en/stable/).
 
-Data from the [Hokuto Renkitōza](http://hokuto.wikia.com/wiki/Main_Page) wiki.
+Data from the [Hokuto Renkitōza](https://hokuto.fandom.com/wiki/Main_Page) wiki.
 
 ## Table of Contents
 

@@ -6,7 +6,7 @@ from hokuto_scraping.spiders.characters import Characters
 
 class TestCharacters(BetamaxTestCase):
     def test_parse_page_kenshiro(self):
-        url = "http://hokuto.wikia.com/wiki/Kenshiro"
+        url = "https://hokuto.fandom.com/wiki/Kenshiro"
         # http response is recorded in a betamax cassette
         response = self.session.get(url)
         # forge a scrapy response to test

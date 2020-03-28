@@ -51,11 +51,10 @@ if REDIS_ITEMS_KEY is None:
 
 def extract_voice_actor(selector):
     name = selector.xpath("text()").extract_first()
-    title = selector.xpath("@title").extract_first()
-    if "page does not exist" in title:
-        url = None
-    else:
+    if selector.xpath("@href"):
         url = selector.xpath("@href").extract_first()
+    else:
+        url = None
     d = {"name": name, "url": url}
     return d
 
@@ -216,23 +215,31 @@ def scrape_page(selector_list, url):
 
 class Characters(CrawlSpider):
     name = "characters"
-    allowed_domains = ["hokuto.wikia.com"]
+    allowed_domains = ["hokuto.fandom.com"]
     start_urls = [
-        "http://hokuto.wikia.com/wiki/List_of_Hokuto_no_Ken_characters",
-        "http://hokuto.wikia.com/wiki/List_of_Jibo_no_Hoshi_characters",
-        "http://hokuto.wikia.com/wiki/List_of_Shirogane_no_Seija_characters",
-        "http://hokuto.wikia.com/wiki/List_of_S%C5%8Dkoku_no_Gar%C5%8D_characters",
-        "http://hokuto.wikia.com/wiki/List_of_Ten_no_Haoh_characters",
-        "http://hokuto.wikia.com/wiki/List_of_Souten_no_Ken_characters",
-        "http://hokuto.wikia.com/wiki/List_of_Souten_no_Ken_Regenesis_characters",
+        "https://hokuto.fandom.com/wiki/List_of_Hokuto_no_Ken_characters",
+        "https://hokuto.fandom.com/wiki/List_of_Jibo_no_Hoshi_characters",
+        "https://hokuto.fandom.com/wiki/List_of_Shirogane_no_Seija_characters",
+        "https://hokuto.fandom.com/wiki/List_of_S%C5%8Dkoku_no_Gar%C5%8D_characters",
+        "https://hokuto.fandom.com/wiki/List_of_Ten_no_Haoh_characters",
+        "https://hokuto.fandom.com/wiki/List_of_Souten_no_Ken_characters",
+        "https://hokuto.fandom.com/wiki/List_of_Souten_no_Ken_Regenesis_characters",
     ]
 
+    # Scrapy crawlers follow links according to a set of rules. Each rule
+    # defines certain behavior for crawling the site.
+    # https://docs.scrapy.org/en/latest/topics/spiders.html#scrapy.spiders.CrawlSpider.rules
     rules = (
         Rule(
             LinkExtractor(
-                allow=("^http:\/\/hokuto\.wikia\.com\/wiki\/.+$",),
+                # Apparently LinkExtractor throws a DeprecationWarning for a
+                # perfectly valid regex like this:
+                # allow=("^https:\/\/hokuto\.fandom\.com\/wiki\/.+$",),
+                # and wants me to write this one, which is not really a regex...
+                allow=("^https://hokuto.fandom.com/wiki/.+$",),
                 restrict_xpaths=("//div[@id='mw-content-text']/ul//li",),
             ),
+            # I would prefer to use Characters.parse_page, but Characters is not defined at this point.
             callback="parse_page",
             follow=False,
         ),
