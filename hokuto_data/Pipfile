@@ -1,17 +1,23 @@
 [[source]]
+name = "pypi"
 url = "https://pypi.org/simple"
 verify_ssl = true
-name = "pypi"
 
 [packages]
-redis = "*"
-sqlalchemy = "*"
 python-dotenv = "*"
-"psycopg2" = "*"
+redis = "*"
 
 [dev-packages]
 black = "*"
 mimesis = "*"
 
 [requires]
-python_version = "3.6"
+python_version = "3.7"
+
+[scripts]
+dump = "pipenv run python process_items.py -d -v -e development"
+fakes = "pipenv run python seed_db.py"
+lint = "pipenv run black . --target-version py37"
+
+[pipenv]
+allow_prereleases = true
