@@ -12,3 +12,13 @@
 4. [Hokuto API Reporting](https://github.com/jackdbd/hokuto-no-ken-api/tree/master/hokuto_api_reporting)
 
 Here is the latest [API report](https://hokuto-no-ken-api-report.surge.sh/) from the last Postman collection run.
+
+## Usage
+
+```sh
+# From the Hokuto Scraping root directory
+pipenv run scrape
+
+# From the Hokuto Data root directory (you must connect to a Redis)
+pipenv run dump
+```
