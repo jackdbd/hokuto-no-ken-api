@@ -64,9 +64,9 @@ TELNETCONSOLE_ENABLED = True
 # }
 
 # Feed Exports
-FEED_URI = f"file:///{ROOT}/export.jsonl"
+# FEED_URI = f"file:///{ROOT}/export.jsonl"
 # FEED_URI = "stdout:"
-FEED_FORMAT = "jsonlines"
+# FEED_FORMAT = "jsonlines"
 
 # I think it's better to define ITEM_PIPELINES in a spider's custom_settings
 # instead of defining them globally here. Different spiders might need to send

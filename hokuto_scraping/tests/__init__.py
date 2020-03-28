@@ -1,1 +1,1 @@
-"""Tests for the scpiders."""
+"""Tests for Scrapy spiders."""

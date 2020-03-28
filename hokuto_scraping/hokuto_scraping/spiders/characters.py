@@ -32,14 +32,21 @@ logger.addHandler(ch)
 LAST_MANGA_CHAPTER = 245
 LAST_ANIME_EPISODE = 152
 
-if "DYNO" in os.environ:
-    print("the app is on Heroku")
-else:
-    DOTENV_PATH = find_dotenv(".env")
-    load_dotenv(DOTENV_PATH)
+DOTENV_PATH = find_dotenv(".env")
+load_dotenv(DOTENV_PATH)
 
-REDIS_ITEMS_KEY = os.environ.get("REDIS_CHARACTERS_KEY")
 REDIS_PORT = os.environ.get("REDIS_PORT")
+REDIS_ITEMS_KEY = os.environ.get("REDIS_CHARACTERS_KEY")
+
+if REDIS_PORT is None:
+    msg = f"""REDIS_PORT not set.
+    Set it as an environment variable in a .env file."""
+    raise KeyError(msg)
+
+if REDIS_ITEMS_KEY is None:
+    msg = f"""REDIS_CHARACTERS_KEY not set.
+    Set it as an environment variable in a .env file."""
+    raise KeyError(msg)
 
 
 def extract_voice_actor(selector):

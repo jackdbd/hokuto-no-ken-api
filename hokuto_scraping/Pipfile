@@ -14,4 +14,12 @@ pytest = "*"
 betamax = "*"
 
 [requires]
-python_version = "3.6"
+python_version = "3.7"
+
+[scripts]
+lint = "pipenv run black . --target-version py37"
+scrape = "pipenv run python manage.py -s characters -o"
+test = "pipenv run pytest --verbose"
+
+[pipenv]
+allow_prereleases = true
