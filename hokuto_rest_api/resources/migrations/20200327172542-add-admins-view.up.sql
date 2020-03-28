@@ -1,0 +1,1 @@
+CREATE VIEW admins AS SELECT * FROM users WHERE is_admin;

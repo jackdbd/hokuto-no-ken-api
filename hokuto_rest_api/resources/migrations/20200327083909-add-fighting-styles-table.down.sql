@@ -1,0 +1,1 @@
+DROP TABLE fighting_styles;

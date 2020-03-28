@@ -1,0 +1,1 @@
+DROP INDEX ix_fighting_styles_name;

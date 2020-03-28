@@ -1,0 +1,1 @@
+CREATE INDEX ix_characters_name ON characters(name);

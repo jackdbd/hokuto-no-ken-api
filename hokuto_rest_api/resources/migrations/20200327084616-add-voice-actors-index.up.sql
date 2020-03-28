@@ -1,0 +1,1 @@
+CREATE INDEX ix_voice_actors_name ON voice_actors(name);

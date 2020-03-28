@@ -1,0 +1,1 @@
+CREATE INDEX ix_fighting_styles_name ON fighting_styles(name);
