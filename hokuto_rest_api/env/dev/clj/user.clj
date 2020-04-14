@@ -206,11 +206,11 @@
     (db/update-user-email! {:email email :id "1"})))
 
 (defn api-users-patch-email [email]
-  (api/users-patch {:server-name "my-server"
-                    :server-port "3000"
-                    :uri "/my-api-endpoint"
-                    :parameters {:body {:email email
-                                        :id "1"}}}))
+  (api/user-patch {:server-name "my-server"
+                   :server-port "3000"
+                   :uri "/my-api-endpoint"
+                   :parameters {:body {:email email
+                                       :id "1"}}}))
 
 (defn api-users-post
   "Invoke the `users-post` handler directly, with no middlewares."
@@ -226,7 +226,7 @@
 (defn api-users-delete
   "Invoke the `users-delete` handler directly, with no middlewares."
   [id]
-  (api/users-delete {:server-name "my-server"
-                     :server-port "3000"
-                     :uri "/my-api-endpoint"
-                     :parameters {:body {:id id}}}))
+  (api/user-delete {:server-name "my-server"
+                    :server-port "3000"
+                    :uri "/my-api-endpoint"
+                    :parameters {:body {:id id}}}))

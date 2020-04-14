@@ -6,6 +6,7 @@
    [clojure.java.jdbc :as jdbc]
    [clojure.tools.logging :as log]
    [hokuto-rest-api.db.core :as db]
+   [hokuto-rest-api.middleware :refer [wrap-auth wrap-restricted]]
    [hokuto-rest-api.middleware.exception :as exception]
    [hokuto-rest-api.middleware.formats :as formats]
    [reitit.coercion.spec :as spec-coercion]
@@ -15,6 +16,7 @@
    [reitit.ring.middleware.parameters :as parameters]
    [reitit.swagger :as swagger]
    [reitit.swagger-ui :as swagger-ui]
+  ;;  https://github.com/metosin/ring-http-response
    [ring.util.http-response :refer :all])
   (:import (java.util UUID)))
 
@@ -192,7 +194,10 @@
    {:coercion spec-coercion/coercion
     :muuntaja formats/instance
     :swagger {:id ::api}
-    :middleware [;; query-params & form-params
+    :middleware [
+                ;;  wrap-auth
+                ;;  wrap-restricted
+                 ;; query-params & form-params
                  parameters/parameters-middleware
                  ;; content-negotiation
                  muuntaja/format-negotiate-middleware
@@ -271,6 +276,7 @@
                                            :next string?
                                            :self string?}}}}}
      :post {:summary "Create a new user"
+            :middleware [wrap-restricted]
             :handler users-post
             :parameters {:body {:first_name string? :last_name string? :email string? :pass string?}}
             :responses {201 {:body {:data {:id string?}
