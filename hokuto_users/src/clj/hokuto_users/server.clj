@@ -1,8 +1,11 @@
 (ns hokuto-users.server
-  (:require [hokuto-users.service :as service]
+  (:require [hokuto-users.config :refer [env]]
+            [hokuto-users.nrepl :as nrepl]
+            [hokuto-users.service :as service]
             [io.pedestal.http :as http]
             [io.pedestal.http.route :as route]
-            [io.pedestal.http.route.definition.table :refer [table-routes]])
+            [io.pedestal.http.route.definition.table :refer [table-routes]]
+            [mount.core :as mount])
   ; Tell the clojure compiler to generate a class for this namespace using the
   ; -main method as entry point.
   (:gen-class))
@@ -44,6 +47,16 @@
        table-routes
        (filter #(= route-name (:route-name %)))
        first))
+
+(mount/defstate ^{:on-reload :noop} repl-server
+  "Stateful component that manages the REPL server's lifecycle.
+  The `repl-server` stateful component depends on the `env` stateful component,
+  but apart from that it has no state, so there is nothing to on reload."
+  :start (when (env :nrepl-port)
+           (nrepl/start {:bind (env :nrepl-bind)
+                         :port (env :nrepl-port)}))
+  :stop (when repl-server
+          (nrepl/stop repl-server)))
 
 (defn -main
   "The entry-point for 'lein run'"
